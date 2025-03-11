@@ -1,0 +1,11 @@
+# Node modules
+node_modules/
+
+# Build directories
+build/
+dist/
+
+# System files
+.DS_Store
+
+
