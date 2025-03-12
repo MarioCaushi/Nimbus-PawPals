@@ -5,7 +5,7 @@ const PageError = () => {
     const navigate = useNavigate();
 
       useEffect(() => {
-        document.title = "Nimbus' PawPal - Error"; // Sets the browser tab title
+        document.title = "Nimbus' PawPal - Error"; 
       }, []);
 
     const goBack = () => {
