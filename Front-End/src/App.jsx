@@ -1,13 +1,13 @@
 import './App.css';
+import {  Route, Routes } from 'react-router-dom';
+import PageError from './pages/PageError';
 
 const App = () => {  
   return (
     <>
-      <div className="App container">
-        <header className="App-header">
-          <h1>This is me testing out if this works :)</h1>
-        </header>
-      </div>  
+      <Routes>
+        <Route path="*" element={<PageError />} />
+      </Routes>
     </>
   );
 };
