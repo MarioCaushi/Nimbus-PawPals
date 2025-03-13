@@ -1,7 +1,28 @@
 import React from 'react';
 import HomeNavBar from '../components/HomeNavBar.jsx';
+import { useState } from 'react';
 
 const Home = () => {
+
+    const [contactMessage, setContactMessage] = useState("");
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [message, setMessage] = useState("");
+
+    const handleContactUs = (event) => {
+        event.preventDefault();
+
+        setContactMessage("Thank you for reaching out! We'll get back to you soon.");
+        
+        setName("");
+        setEmail("");
+        setMessage("");
+
+        setTimeout(() => {
+            setContactMessage("");
+        }, 5000);
+    };
+
     return (
         <>
             <div className="d-flex flex-column align-items-center justify-content-center pt-5 w-100">
@@ -41,6 +62,7 @@ const Home = () => {
                                 className="btn"
                                 style={{ backgroundColor: "#FF7F50", color: "#fff" }}
                                 type="button"
+                                onClick={() => { alert("this works but not yet implemented") }}
                             >
                                 Browse
                             </button>
@@ -59,10 +81,10 @@ const Home = () => {
                     <div
                         className="row align-items-center mb-5"
                         style={{
-                            backgroundColor: "#ffffff", // Clean white background
-                            borderRadius: "12px", // Rounded corners for field
-                            padding: "25px", // Balanced padding
-                            boxShadow: "0 5px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for separation
+                            backgroundColor: "#ffffff",
+                            borderRadius: "12px",
+                            padding: "25px",
+                            boxShadow: "0 5px 12px rgba(0, 0, 0, 0.1)",
                         }}
                     >
                         <div className="col-md-6 p-3">
@@ -134,10 +156,10 @@ const Home = () => {
                     <div
                         className="row align-items-center mb-5"
                         style={{
-                            backgroundColor: "#ffffff", // Clean white background for contrast
-                            borderRadius: "12px", // Rounded corners for field
-                            padding: "25px", // Balanced padding
-                            boxShadow: "0 5px 12px rgba(0, 0, 0, 0.1)", // Subtle shadow for separation
+                            backgroundColor: "#ffffff",
+                            borderRadius: "12px",
+                            padding: "25px",
+                            boxShadow: "0 5px 12px rgba(0, 0, 0, 0.1)",
                         }}
                     >
                         <div className="col-md-6 p-3">
@@ -158,7 +180,7 @@ const Home = () => {
                                 <strong>Sign up today</strong> to unlock all the amazing services we offer and make your pet’s experience with us even better!
                             </p>
                             <div className="d-flex justify-content-center mt-3">
-                                <button className="btn btn-primary rounded-pill px-4 py-2">
+                                <button className="btn btn-primary rounded-pill px-4 py-2" onClick={() => { alert("this works but not yet implemented") }}>
                                     Sign-Up
                                 </button>
                             </div>
@@ -204,37 +226,36 @@ const Home = () => {
                 </div>
 
 
-
                 {/* Contact Us Section */}
                 <div className="container-fluid mb-5" id="contact-us">
                     <h2 className="text-center mb-3" style={{ letterSpacing: '1px', fontSize: '2rem' }}>Contact Us</h2>
-
                     <div className="row justify-content-center">
                         <div className="col-md-10 col-lg-8">
                             <div className="card shadow-lg p-5 rounded-4">
                                 <h3 className="text-center mb-4" style={{ fontSize: '1.7rem', fontWeight: '500' }}>We’d love to hear from you!</h3>
-                                <form>
+                                <form onSubmit={handleContactUs}>
                                     <div className="mb-4">
                                         <label htmlFor="name" className="form-label fw-semibold" style={{ fontSize: '1.1rem' }}>Full Name</label>
-                                        <input type="text" className="form-control border-0 rounded-3 shadow-sm" id="name" required placeholder="Enter your full name" style={{ padding: '12px 15px', fontSize: '1rem' }} />
+                                        <input type="text" className="form-control border-0 rounded-3 shadow-sm" id="name" required placeholder="Enter your full name" style={{ padding: '12px 15px', fontSize: '1rem' }} value={name} onChange={(e) => setName(e.target.value)} />
                                     </div>
                                     <div className="mb-4">
                                         <label htmlFor="email" className="form-label fw-semibold" style={{ fontSize: '1.1rem' }}>Email Address</label>
-                                        <input type="email" className="form-control border-0 rounded-3 shadow-sm" id="email" required placeholder="Enter your email" style={{ padding: '12px 15px', fontSize: '1rem' }} />
+                                        <input type="email" className="form-control border-0 rounded-3 shadow-sm" id="email" required placeholder="Enter your email" style={{ padding: '12px 15px', fontSize: '1rem' }} value={email} onChange={(e) => setEmail(e.target.value)} />
                                     </div>
                                     <div className="mb-4">
                                         <label htmlFor="message" className="form-label fw-semibold" style={{ fontSize: '1.1rem' }}>Message</label>
-                                        <textarea className="form-control border-0 rounded-3 shadow-sm" id="message" rows="5" required placeholder="Write your message here..." style={{ padding: '12px 15px', fontSize: '1rem' }}></textarea>
+                                        <textarea className="form-control border-0 rounded-3 shadow-sm" id="message" rows="5" required placeholder="Write your message here..." style={{ padding: '12px 15px', fontSize: '1rem' }} value={message} onChange={(e) => setMessage(e.target.value)}></textarea>
                                     </div>
                                     <button type="submit" className="btn btn-gradient w-100 rounded-pill py-3 mt-3" style={{ fontSize: '1.1rem', background: 'linear-gradient(45deg, #4C6EF5, #9B59B6)', border: 'none', color: '#fff' }}>
                                         Send Message
                                     </button>
-
                                 </form>
+                                {contactMessage && <div className="alert alert-primary mt-3" role="alert">{contactMessage}</div>}
                             </div>
                         </div>
                     </div>
                 </div>
+
 
                 {/* Optional Footer */}
                 <div className="bg-light text-center p-3 border-top rounded-pill w-100">
