@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import LoginModal from './LoginModal';
+import RegisterModal from './RegisterModal';
 
 const HomeNavBar = () => {
-    const [showModal, setShowModal] = useState(false);
+    const [showLoginModal, setShowLoginModal] = useState(false);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-    const handleOpenModal = () => {
-        setShowModal(true);
+    const handleOpenLoginModal = () => {
+        setShowLoginModal(true);
+        setShowRegisterModal(false); 
     };
 
-    const handleCloseModal = () => {
-        setShowModal(false);
+    const handleOpenRegisterModal = () => {
+        setShowRegisterModal(true);
+        setShowLoginModal(false); 
+    };
+
+    const handleCloseModals = () => {
+        setShowLoginModal(false);
+        setShowRegisterModal(false);
     };
 
     return (
@@ -36,15 +45,14 @@ const HomeNavBar = () => {
                             </li>
                         </ul>
                         <div className="d-flex flex-column flex-lg-row align-items-center mt-3 mt-lg-0">
-                            <div className="d-flex flex-column flex-lg-row mt-3 mt-lg-0 align-items-center">
-                                <button className="btn btn-outline-success mb-2 mb-lg-0 me-lg-3" type="button" onClick={handleOpenModal}>Login</button>
-                                <button className="btn btn-outline-warning " type="button" onClick={() => { alert("this works but not yet implemented")}}>Sign-Up</button>
-                            </div>
+                            <button className="btn btn-outline-success mb-2 mb-lg-0 me-lg-3" type="button" onClick={handleOpenLoginModal}>Login</button>
+                            <button className="btn btn-outline-warning" type="button" onClick={handleOpenRegisterModal}>Sign-Up</button>
                         </div>
                     </div>
                 </div>
             </nav>
-            <LoginModal show={showModal} handleClose={handleCloseModal} />
+            <LoginModal show={showLoginModal} handleClose={handleCloseModals} />
+            <RegisterModal show={showRegisterModal} handleClose={handleCloseModals} />
         </>
     );
 };

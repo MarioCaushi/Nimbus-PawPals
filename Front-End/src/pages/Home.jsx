@@ -1,6 +1,7 @@
 import React from 'react';
 import HomeNavBar from '../components/HomeNavBar.jsx';
 import { useState } from 'react';
+import RegisterModal from '../components/RegisterModal.jsx';
 
 const Home = () => {
 
@@ -9,11 +10,13 @@ const Home = () => {
     const [email, setEmail] = useState("");
     const [message, setMessage] = useState("");
 
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+
     const handleContactUs = (event) => {
         event.preventDefault();
 
         setContactMessage("Thank you for reaching out! We'll get back to you soon.");
-        
+
         setName("");
         setEmail("");
         setMessage("");
@@ -22,6 +25,15 @@ const Home = () => {
             setContactMessage("");
         }, 5000);
     };
+
+    const handleOpenSignUp = () => {
+        setShowRegisterModal(true);
+    };
+
+    const handleCloseSignUp = () => {
+        setShowRegisterModal(false);
+    }
+
 
     return (
         <>
@@ -180,7 +192,7 @@ const Home = () => {
                                 <strong>Sign up today</strong> to unlock all the amazing services we offer and make your pet’s experience with us even better!
                             </p>
                             <div className="d-flex justify-content-center mt-3">
-                                <button className="btn btn-primary rounded-pill px-4 py-2" onClick={() => { alert("this works but not yet implemented") }}>
+                                <button className="btn btn-primary rounded-pill px-4 py-2" onClick={handleOpenSignUp}>
                                     Sign-Up
                                 </button>
                             </div>
@@ -256,15 +268,16 @@ const Home = () => {
                     </div>
                 </div>
 
-
                 {/* Optional Footer */}
                 <div className="bg-light text-center p-3 border-top rounded-pill w-100">
                     <div className="container">
                         <p className="mb-0">© 2025 Nimbus' PawPals. All rights reserved.</p>
                     </div>
                 </div>
-
             </div >
+
+            {/* Register Modal */}
+            <RegisterModal show={showRegisterModal} handleClose={handleCloseSignUp} />
         </>
     );
 };
