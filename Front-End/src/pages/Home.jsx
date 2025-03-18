@@ -1,9 +1,12 @@
 import React from 'react';
-import HomeNavBar from '../components/HomeNavBar.jsx';
+import HomeNavBar from '../components/NavBars/HomeNavBar.jsx';
 import { useState } from 'react';
 import RegisterModal from '../components/RegisterModal.jsx';
+import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
+
+    const navigate = useNavigate();
 
     const [contactMessage, setContactMessage] = useState("");
     const [name, setName] = useState("");
@@ -74,7 +77,7 @@ const Home = () => {
                                 className="btn"
                                 style={{ backgroundColor: "#FF7F50", color: "#fff" }}
                                 type="button"
-                                onClick={() => { alert("this works but not yet implemented") }}
+                                onClick={() => { navigate('/Products') }}
                             >
                                 Browse
                             </button>

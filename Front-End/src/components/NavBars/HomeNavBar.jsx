@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import LoginModal from './LoginModal';
-import RegisterModal from './RegisterModal';
+import LoginModal from '../LoginModal';
+import RegisterModal from '../RegisterModal';
 
 const HomeNavBar = () => {
     const [showLoginModal, setShowLoginModal] = useState(false);
@@ -41,7 +41,7 @@ const HomeNavBar = () => {
                                 <a className="nav-link text-dark" href="#contact-us">Contact Us</a>
                             </li>
                             <li className="nav-item">
-                                <a className="nav-link text-dark" href="#" onClick={() => { alert("this works but not yet implemented")}}>Products</a>
+                                <Link className="nav-link text-dark" to="/Products">Products</Link>
                             </li>
                         </ul>
                         <div className="d-flex flex-column flex-lg-row align-items-center mt-3 mt-lg-0">
