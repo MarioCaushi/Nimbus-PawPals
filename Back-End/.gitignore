@@ -6,9 +6,6 @@ obj/
 .env
 .vs/
 *.user
-.idea
-.idea/.idea.Back-End/.idea
-bin/Debug/net9.0
 
 # Ignore specific build output directories
 bin/Debug/net9.0/
