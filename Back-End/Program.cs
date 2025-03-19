@@ -1,41 +1,78 @@
+using WebApplication = Microsoft.AspNetCore.Builder.WebApplication;
+
+using Microsoft.EntityFrameworkCore;
+using static Back_End.Errors.ExceptionsMiddlewareExtensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Manually load .env file
+LoadEnvVariables();
+
 // Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+builder.Services.AddControllers();
+builder.Services.AddCors();
+
+// Retrieve the environment variable and check
+var configuration = builder.Configuration;
+var password = Environment.GetEnvironmentVariable("MYSQL_PASSWORD") ?? throw new InvalidOperationException("The 'MYSQL_PASSWORD' environment variable is not set.");
+
+// Retrieve and build the connection string
+var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("The 'DefaultConnection' connection string is missing in the configuration.");
+connectionString = connectionString.Replace("${MYSQL_PASSWORD}", password);
+
+// Configure the DbContext with MySQL
+// builder.Services.AddDbContext< >(options =>
+//     options.UseMySql(connectionString, new MySqlServerVersion(new Version(9, 1, 0)))
+// );
+
+// Register the Swagger generator
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new() { Title = "My API", Version = "v1" });
+});
+
+// Register the services
+
+// builder.Services.AddScoped<IManagerService, ManagerService>();
+// builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+        c.RoutePrefix = string.Empty; // The default is /swagger
+    });
 }
+
+app.UseCors(options =>
+    options.AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod());
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+// Exception Handling
+app.ConfigureBuildInExceptionHandlers();
 
-app.MapGet("/weatherforecast", () =>
-    {
-        var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                ))
-            .ToArray();
-        return forecast;
-    })
-    .WithName("GetWeatherForecast");
-
+app.MapControllers();
 app.Run();
 
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+//Function to load the content of .env file manually 
+void LoadEnvVariables()
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    var envPath = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+    if (!File.Exists(envPath))
+        return;
+
+    foreach (var line in File.ReadAllLines(envPath))
+    {
+        var parts = line.Split('=', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length != 2) continue;
+        Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim());
+    }
 }
