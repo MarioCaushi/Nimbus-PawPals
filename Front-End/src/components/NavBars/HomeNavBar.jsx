@@ -27,7 +27,11 @@ const HomeNavBar = () => {
             <nav className="navbar navbar-expand-lg navbar-light bg-white p-2 rounded-4 border border-2 border-black shadow-sm fixed-top m-3">
                 <div className="container-fluid p-1">
                     <Link to="/" className="navbar-brand d-flex align-items-center text-dark">
-                        <span className="fs-4 text-dark ms-2">Nimbus' PawPals</span>
+                    <img
+                            src="src/assets/navbar-logo.png"
+                            alt="Nimbus' PawPals Logo"
+                            style={{ maxWidth: "100px", width: "100px", height: "auto" }}
+                        />
                     </Link>
                     <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span className="navbar-toggler-icon"></span>

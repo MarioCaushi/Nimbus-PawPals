@@ -62,7 +62,7 @@ const Home = () => {
                         <img
                             src="src/assets/pet-logo.png"
                             alt="Nimbus' PawPals Logo"
-                            style={{ maxWidth: "1000px", width: "100%", height: "auto" }}
+                            style={{ maxWidth: "1000px", width: "400px", height: "auto" }}
                         />
                     </div>
                     <div className="text-center mt-4 m-3">
