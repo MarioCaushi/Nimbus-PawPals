@@ -1,7 +1,7 @@
 import React from 'react';
 import HomeNavBar from '../components/NavBars/HomeNavBar.jsx';
 import { useState } from 'react';
-import RegisterModal from '../components/RegisterModal.jsx';
+import RegisterModal from '../components/Modals/RegisterModal.jsx';
 import { useNavigate } from 'react-router-dom';
 
 const Home = () => {
