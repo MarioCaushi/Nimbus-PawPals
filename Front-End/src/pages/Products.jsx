@@ -24,7 +24,7 @@ const Products = () => {
     <>
     <NavigationBar loggedIn={loggedIn} role={role} />
     
-    <ProductView/>
+    <ProductView loggedIn={loggedIn} role={role}/>
 
     </>
   )

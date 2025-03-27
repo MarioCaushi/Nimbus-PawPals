@@ -14,7 +14,7 @@ const products = [
     { id: 10, name: 'Product 10', price: '$109.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 10.' }
 ];
 
-const ProductView = () => {
+const ProductView = ({ loggedIn, role }) => {
     const [selectedProduct, setSelectedProduct] = useState(null);
 
     return (
@@ -103,42 +103,42 @@ const ProductView = () => {
                     overflowY: 'auto'
                 }}>
                     <div className="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-                    {products.map(product => (
-    <div key={product.id} className="col">
-        <div className="card h-100 shadow-sm border-0"
-            style={{
-                cursor: 'pointer',
-                borderRadius: '15px',
-                overflow: 'hidden',
-                transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-                background: 'linear-gradient(to bottom, #f9fafb, #ffffff)', // Softer gradient background
-                border: '1px solid #e0e0e0', // Softer border color
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)' // Softer shadow
-            }}
-            onClick={() => setSelectedProduct(product)}
-            onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'scale(1.03)';
-                e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
-            }}
-        >
-            <div className="position-relative">
-                <img src={product.image} className="card-img-top" alt={product.name}
-                    style={{ height: '200px', objectFit: 'cover', borderRadius: '15px 15px 0 0' }}
-                />
-            </div>
-            <div className="card-body text-center">
-                <h6 className="card-title fw-bold text-dark">{product.name}</h6>
-                <p className="card-text text-muted small">{product.description.slice(0, 40)}...</p>
-                <p className="card-text text-success fw-bold fs-5">{product.price}</p> {/* Green price text for better contrast */}
-                <button className="btn btn-warning btn-sm px-4 text-dark fw-bold">View Details</button> {/* New warm yellow button */}
-            </div>
-        </div>
-    </div>
-))}
+                        {products.map(product => (
+                            <div key={product.id} className="col">
+                                <div className="card h-100 shadow-sm border-0"
+                                    style={{
+                                        cursor: 'pointer',
+                                        borderRadius: '15px',
+                                        overflow: 'hidden',
+                                        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                        background: 'linear-gradient(to bottom, #f9fafb, #ffffff)', // Softer gradient background
+                                        border: '1px solid #e0e0e0', // Softer border color
+                                        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)' // Softer shadow
+                                    }}
+                                    onClick={() => setSelectedProduct(product)}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1.03)';
+                                        e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.transform = 'scale(1)';
+                                        e.currentTarget.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.1)';
+                                    }}
+                                >
+                                    <div className="position-relative">
+                                        <img src={product.image} className="card-img-top" alt={product.name}
+                                            style={{ height: '200px', objectFit: 'cover', borderRadius: '15px 15px 0 0' }}
+                                        />
+                                    </div>
+                                    <div className="card-body text-center">
+                                        <h6 className="card-title fw-bold text-dark">{product.name}</h6>
+                                        <p className="card-text text-muted small">{product.description.slice(0, 40)}...</p>
+                                        <p className="card-text text-success fw-bold fs-5">{product.price}</p> {/* Green price text for better contrast */}
+                                        <button className="btn btn-warning btn-sm px-4 text-dark fw-bold">View Details</button> {/* New warm yellow button */}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
 
 
 

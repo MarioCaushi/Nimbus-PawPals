@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import LoginModal from '../LoginModal';
-import RegisterModal from '../RegisterModal';
+import LoginModal from '../Modals/LoginModal';
+import RegisterModal from '../Modals/RegisterModal';
 
 const HomeNavBar = () => {
     const [showLoginModal, setShowLoginModal] = useState(false);
