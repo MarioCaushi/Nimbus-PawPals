@@ -121,7 +121,7 @@ const ProductView = ({ loggedIn, role, products }) => {
                                     <div className="card-body text-center">
                                         <h6 className="card-title fw-bold text-dark">{product["name"]}</h6>
                                         <p className="card-text text-muted small">{product["description"].slice(0, 40)}...</p>
-                                        <p className="card-text text-success fw-bold fs-5">{product["price"]}</p> {/* Green price text for better contrast */}
+                                        <p className="card-text text-success fw-bold fs-5">{product["price"]}$</p> {/* Green price text for better contrast */}
                                         <button className="btn btn-warning btn-sm px-4 text-dark fw-bold">View Details</button> {/* New warm yellow button */}
                                     </div>
                                 </div>
@@ -150,7 +150,7 @@ const ProductView = ({ loggedIn, role, products }) => {
                                     style={{ maxWidth: '100%', width: '300px', height: 'auto' }}
                                 />
                                 <p className="mt-3">{selectedProduct["description"]}</p>
-                                <h4 className="text-primary">{selectedProduct["price"]}</h4>
+                                <h4 className="text-primary">{selectedProduct["price"]}$</h4>
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setSelectedProduct(null)}>Close</button>
