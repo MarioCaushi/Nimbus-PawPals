@@ -1,20 +1,8 @@
 import React, { useState } from 'react';
 import ProductFilter from './ProductFilter';
 
-const products = [
-    { id: 1, name: 'Product 1', price: '$19.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 1.' },
-    { id: 2, name: 'Product 2', price: '$29.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 2.' },
-    { id: 3, name: 'Product 3', price: '$39.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 3.' },
-    { id: 4, name: 'Product 4', price: '$49.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 4.' },
-    { id: 5, name: 'Product 5', price: '$59.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 5.' },
-    { id: 6, name: 'Product 6', price: '$69.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 6.' },
-    { id: 7, name: 'Product 7', price: '$79.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 7.' },
-    { id: 8, name: 'Product 8', price: '$89.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 8.' },
-    { id: 9, name: 'Product 9', price: '$99.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 9.' },
-    { id: 10, name: 'Product 10', price: '$109.99', image: 'https://via.placeholder.com/200', description: 'This is a detailed description of Product 10.' }
-];
 
-const ProductView = ({ loggedIn, role }) => {
+const ProductView = ({ loggedIn, role, products }) => {
     const [selectedProduct, setSelectedProduct] = useState(null);
 
     return (
@@ -94,7 +82,7 @@ const ProductView = ({ loggedIn, role }) => {
 
                 {/* Left Column - Fixed Sidebar for Filters */}
                 <div className="filters p-2 me-4" style={{ minWidth: '300px', maxWidth: '350px', overflowY: 'auto' }}>
-                    <ProductFilter />
+                    <ProductFilter types={products["Types"]} />
                 </div>
 
                 {/* Right Column - Scrollable Product Listing */}
@@ -103,8 +91,8 @@ const ProductView = ({ loggedIn, role }) => {
                     overflowY: 'auto'
                 }}>
                     <div className="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-                        {products.map(product => (
-                            <div key={product.id} className="col">
+                        {products["Products"].map(product => (
+                            <div key={product["productId"]} className="col">
                                 <div className="card h-100 shadow-sm border-0"
                                     style={{
                                         cursor: 'pointer',
@@ -126,21 +114,19 @@ const ProductView = ({ loggedIn, role }) => {
                                     }}
                                 >
                                     <div className="position-relative">
-                                        <img src={product.image} className="card-img-top" alt={product.name}
+                                        <img src={product["imageUrl"]} className="card-img-top" alt={product["name"]}
                                             style={{ height: '200px', objectFit: 'cover', borderRadius: '15px 15px 0 0' }}
                                         />
                                     </div>
                                     <div className="card-body text-center">
-                                        <h6 className="card-title fw-bold text-dark">{product.name}</h6>
-                                        <p className="card-text text-muted small">{product.description.slice(0, 40)}...</p>
-                                        <p className="card-text text-success fw-bold fs-5">{product.price}</p> {/* Green price text for better contrast */}
+                                        <h6 className="card-title fw-bold text-dark">{product["name"]}</h6>
+                                        <p className="card-text text-muted small">{product["description"].slice(0, 40)}...</p>
+                                        <p className="card-text text-success fw-bold fs-5">{product["price"]}</p> {/* Green price text for better contrast */}
                                         <button className="btn btn-warning btn-sm px-4 text-dark fw-bold">View Details</button> {/* New warm yellow button */}
                                     </div>
                                 </div>
                             </div>
                         ))}
-
-
 
                     </div>
                 </div>
@@ -153,13 +139,18 @@ const ProductView = ({ loggedIn, role }) => {
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">{selectedProduct.name}</h5>
+                                <h5 className="modal-title">{selectedProduct["name"]}</h5>
                                 <button type="button" className="btn-close" onClick={() => setSelectedProduct(null)}></button>
                             </div>
                             <div className="modal-body text-center">
-                                <img src={selectedProduct.image} alt={selectedProduct.name} className="img-fluid rounded" />
-                                <p className="mt-3">{selectedProduct.description}</p>
-                                <h4 className="text-primary">{selectedProduct.price}</h4>
+                                <img
+                                    src={selectedProduct["imageUrl"]}
+                                    alt={selectedProduct["name"]}
+                                    className="img-fluid rounded"
+                                    style={{ maxWidth: '100%', width: '300px', height: 'auto' }}
+                                />
+                                <p className="mt-3">{selectedProduct["description"]}</p>
+                                <h4 className="text-primary">{selectedProduct["price"]}</h4>
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setSelectedProduct(null)}>Close</button>
