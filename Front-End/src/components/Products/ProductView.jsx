@@ -1,9 +1,110 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ProductFilter from './ProductFilter';
+import axios from "axios";
 
+const ProductView = ({ loggedIn, role }) => {
 
-const ProductView = ({ loggedIn, role, products }) => {
+    const [products, setProducts] = useState({ Products: [], Types: [] });
     const [selectedProduct, setSelectedProduct] = useState(null);
+
+    // Dealing with product search and filter
+
+    const [searchTerm, setSearchTerm] = useState('');
+    const [category, setCategory] = useState('');
+    const [animalType, setAnimalType] = useState('');
+    const [minPrice, setMinPrice] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+
+    const [filtersApplied, setFiltersApplied] = useState(false);
+
+    useEffect(() => {
+        getAPI();
+    }, []);
+
+    const getAPI = async () => {
+        try {
+          const response1 = await axios.get('http://localhost:5067/api/Product');
+          let types = []; // Default empty array if the second call fails
+          if (response1.status === 200) {
+            const response2 = await axios.get('http://localhost:5067/api/Product/types');
+            if (response2.status === 200) {
+              types = response2.data;
+            } else {
+              console.error("Error fetching product types from API");
+            }
+            setProducts({
+              Products: response1.data,
+              Types: types
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching products from API", error);
+        }
+      };
+
+    const resetFilters = () => {
+        setCategory('');
+        setAnimalType('');
+        setMinPrice('');
+        setMaxPrice('');
+        setSearchTerm('');
+    }
+
+    // Function to filter products based on the selected filters every time filtersApplied changes
+    useEffect(() => {
+        filterAPI();
+    }, [filtersApplied]);
+
+
+    const handleApplyFilters = async (e, filter, choice) => {
+        e.preventDefault();
+    
+        if (filter === 'category') {
+            setCategory(choice);
+        } else if (filter === 'animalType') {
+            setAnimalType(choice);
+        } else if (filter === 'minPrice') {
+            setMinPrice(choice);
+        } else if (filter === 'maxPrice') {
+            setMaxPrice(choice);
+        } else if (filter === 'searchTerm') {
+            setSearchTerm(choice);
+        } else if (filter === 'ApplyFilters') {
+            await filterAPI(); // Call API directly here
+        }
+    };
+    
+    const filterAPI = async () => {
+        const params = {
+            category: category,
+            animalType: animalType,
+            minPrice: minPrice,
+            maxPrice: maxPrice,
+            searchTerm: searchTerm
+        };
+    
+        // Remove empty filter parameters
+        Object.keys(params).forEach(key => params[key] === '' && delete params[key]);
+    
+        console.log("Applying filters:", params);
+    
+        try {
+            const response = await axios.post('http://localhost:5067/api/Product/search', params);
+            if (response.status === 200) {
+                setProducts(prev => ({
+                    ...prev,
+                    Products: response.data
+                }));
+            } else {
+                console.error("Error fetching filtered products from API");
+            }
+        } catch (error) {
+            console.error("Error with the filter API call", error);
+        }
+    };
+    
+    // Note: No useEffect needed for filtersApplied if using the above setup
+    
 
     return (
         <div className="container-fluid px-0 py-4 ">
@@ -31,6 +132,8 @@ const ProductView = ({ loggedIn, role, products }) => {
                         paddingLeft: '15px',
                         backgroundColor: 'white'
                     }}
+                    value={searchTerm}
+                    onChange={(e) => handleApplyFilters(e, 'searchTerm', e.target.value)}
                 />
                 <button type="button" className="btn me-2" style={{
                     backgroundColor: 'white',
@@ -50,7 +153,8 @@ const ProductView = ({ loggedIn, role, products }) => {
                     onMouseOut={(e) => {
                         e.target.style.backgroundColor = 'white';
                         e.target.style.color = '#5A8DEE';
-                    }}>
+                    }}
+                    onClick={(e) => handleApplyFilters(e, 'ApplyFilters', null)}>
                     Search
                 </button>
                 <button type="button" className="btn" style={{
@@ -71,7 +175,8 @@ const ProductView = ({ loggedIn, role, products }) => {
                     onMouseOut={(e) => {
                         e.target.style.backgroundColor = 'white';
                         e.target.style.color = '#ADB5BD';
-                    }}>
+                    }}
+                    onClick={() => resetFilters()}>
                     Clear
                 </button>
             </div>
@@ -82,7 +187,14 @@ const ProductView = ({ loggedIn, role, products }) => {
 
                 {/* Left Column - Fixed Sidebar for Filters */}
                 <div className="filters p-2 me-4" style={{ minWidth: '300px', maxWidth: '350px', overflowY: 'auto' }}>
-                    <ProductFilter types={products["Types"]} />
+                    <ProductFilter types={{
+                        "Products": products["Types"],
+                        category,
+                        animalType,
+                        minPrice,
+                        maxPrice,
+                        searchTerm
+                    }} handleApplyFilters={handleApplyFilters} />
                 </div>
 
                 {/* Right Column - Scrollable Product Listing */}
