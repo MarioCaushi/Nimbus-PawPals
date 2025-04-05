@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ProductFilter from './ProductFilter';
 import axios from "axios";
 
-const ProductView = ({ loggedIn, role }) => {
+const ProductView = ({ role }) => {
 
     const [products, setProducts] = useState({ Products: [], Types: [] });
     const [selectedProduct, setSelectedProduct] = useState(null);
@@ -23,24 +23,24 @@ const ProductView = ({ loggedIn, role }) => {
 
     const getAPI = async () => {
         try {
-          const response1 = await axios.get('http://localhost:5067/api/Product');
-          let types = []; // Default empty array if the second call fails
-          if (response1.status === 200) {
-            const response2 = await axios.get('http://localhost:5067/api/Product/types');
-            if (response2.status === 200) {
-              types = response2.data;
-            } else {
-              console.error("Error fetching product types from API");
+            const response1 = await axios.get('http://localhost:5067/api/Product');
+            let types = []; // Default empty array if the second call fails
+            if (response1.status === 200) {
+                const response2 = await axios.get('http://localhost:5067/api/Product/types');
+                if (response2.status === 200) {
+                    types = response2.data;
+                } else {
+                    console.error("Error fetching product types from API");
+                }
+                setProducts({
+                    Products: response1.data,
+                    Types: types
+                });
             }
-            setProducts({
-              Products: response1.data,
-              Types: types
-            });
-          }
         } catch (error) {
-          console.error("Error fetching products from API", error);
+            console.error("Error fetching products from API", error);
         }
-      };
+    };
 
     const resetFilters = () => {
         setCategory('');
@@ -58,7 +58,7 @@ const ProductView = ({ loggedIn, role }) => {
 
     const handleApplyFilters = async (e, filter, choice) => {
         e.preventDefault();
-    
+
         if (filter === 'category') {
             setCategory(choice);
         } else if (filter === 'animalType') {
@@ -73,7 +73,7 @@ const ProductView = ({ loggedIn, role }) => {
             await filterAPI(); // Call API directly here
         }
     };
-    
+
     const filterAPI = async () => {
         const params = {
             category: category,
@@ -82,12 +82,12 @@ const ProductView = ({ loggedIn, role }) => {
             maxPrice: maxPrice,
             searchTerm: searchTerm
         };
-    
+
         // Remove empty filter parameters
         Object.keys(params).forEach(key => params[key] === '' && delete params[key]);
-    
+
         console.log("Applying filters:", params);
-    
+
         try {
             const response = await axios.post('http://localhost:5067/api/Product/search', params);
             if (response.status === 200) {
@@ -102,9 +102,7 @@ const ProductView = ({ loggedIn, role }) => {
             console.error("Error with the filter API call", error);
         }
     };
-    
-    // Note: No useEffect needed for filtersApplied if using the above setup
-    
+
 
     return (
         <div className="container-fluid px-0 py-4 ">
@@ -120,6 +118,30 @@ const ProductView = ({ loggedIn, role }) => {
                 padding: '6px',
                 backgroundColor: 'white'
             }}>
+                {role === 'Manager' && (
+                    <button type="button" className="btn" style={{
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        borderRadius: '25px',
+                        border: 'none',
+                        height: '50px',
+                        fontSize: '16px',
+                        padding: '0 20px',
+                        marginRight: '20px',
+                        boxShadow: '0 4px 8px rgba(0, 128, 0, 0.2)',
+                        transition: 'all 0.3s ease'
+                    }}
+                        onMouseOver={(e) => {
+                            e.target.style.backgroundColor = '#367c39';
+                        }}
+                        onMouseOut={(e) => {
+                            e.target.style.backgroundColor = '#4CAF50';
+                        }}
+                        onClick={() => {/* Handle add product logic here */ }}>
+                        Add Product
+                    </button>
+                )}
+
                 <input
                     type="text"
                     className="form-control me-2"
@@ -265,7 +287,47 @@ const ProductView = ({ loggedIn, role }) => {
                                 <h4 className="text-primary">{selectedProduct["price"]}$</h4>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setSelectedProduct(null)}>Close</button>
+                                {role === "Manager" && (
+                                    <>
+                                        <button
+                                            className="btn"
+                                            style={{
+                                                backgroundColor: '#dc3545', // Red for delete
+                                                color: 'white',
+                                                borderRadius: '5px',
+                                                marginRight: '10px',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                            onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
+                                            onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+                                            onClick={() => {/* Handle delete logic here */ }}
+                                        >
+                                            Delete
+                                        </button>
+                                        <button
+                                            className="btn"
+                                            style={{
+                                                backgroundColor: '#17a2b8', // Light blue, specifically Bootstrap's "info" blue
+                                                color: 'white',
+                                                borderRadius: '5px',
+                                                marginRight: '10px',
+                                                transition: 'all 0.3s ease'
+                                            }}
+                                            onMouseOver={(e) => e.target.style.backgroundColor = '#138496'} // Slightly darker on hover
+                                            onMouseOut={(e) => e.target.style.backgroundColor = '#17a2b8'}
+                                            onClick={() => {/* Handle edit logic here */ }}
+                                        >
+                                            Edit
+                                        </button>
+
+                                    </>
+                                )}
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setSelectedProduct(null)}
+                                >
+                                    Close
+                                </button>
                             </div>
                         </div>
                     </div>

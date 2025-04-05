@@ -9,9 +9,13 @@ const NavigationBar = ({ loggedIn, role }) => {
         {
             return <HomeNavBar />;
         }
-        else 
+        else if( role !== 'Client')
         {
             return <StaffNavBar/>;
+        }
+        else
+        {
+            return ;
         }
     };
 

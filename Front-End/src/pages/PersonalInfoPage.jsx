@@ -1,10 +1,25 @@
 import React from 'react';
-import StaffNavBar from '../components/NavBars/StaffNavBar';
+import NavigationBar from '../components/NavBars/NavigationBar';
 import ViewPersonalInfo from '../components/PersonalInfo/ViewPersonalInfo';
 import EditPersonalInfo from '../components/PersonalInfo/EditPersonalInfo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const LOGGED_IN_KEY = 'isLoggedIn';
+const ROLE_KEY = 'role';
 
 const PersonalInfo = () => {
+
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [role, setRole] = useState('');
+  
+    useEffect(() => {
+      const token = localStorage.getItem(LOGGED_IN_KEY);
+      const savedRole = localStorage.getItem(ROLE_KEY); // Renamed to avoid shadowing
+      if (token) {
+        setLoggedIn(true);
+        setRole(savedRole);
+      }
+    }, []);
 
   // Simulated user data
   const userInfo = {
@@ -28,7 +43,7 @@ const PersonalInfo = () => {
   
   return (
     <div>
-      <StaffNavBar />
+      <NavigationBar loggedIn={loggedIn} role={role} />
       <div style={{ height: '50px', visibility: 'hidden' }}>Spacer</div>
       <div className="container-fluid">
         <h2 className='mt-3 mb-0'>Personal Info</h2>
