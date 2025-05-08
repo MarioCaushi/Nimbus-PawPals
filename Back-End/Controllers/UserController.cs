@@ -19,43 +19,34 @@ public class UserController : ControllerBase
     }
  
     [HttpGet("staff")]
-    public async Task<IActionResult> GetStaffUser()
+    public async Task<IActionResult> GetStaffUser([FromQuery] string role, [FromQuery] int roleId)
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var roleClaim = User.FindFirstValue(ClaimTypes.Role); // Get role from claims
-        
-        if (string.IsNullOrEmpty(userIdClaim))
+        if (string.IsNullOrWhiteSpace(role) || roleId <= 0)
         {
-            return Unauthorized();
-        }
-    
-        if (!int.TryParse(userIdClaim, out var userId))
-        {
-            return BadRequest("Invalid user ID format");
+            return BadRequest("Both role and roleId must be provided and valid.");
         }
 
-        var user = await _userService.GetStaffUser(userId, roleClaim); // Pass both arguments
-        return user == null ? NotFound() : Ok(user);
+        var user = await _userService.GetStaffUser(roleId, role);
+    
+        if (user == null)
+        {
+            return NotFound("Staff member not found.");
+        }
+
+        return Ok(user);
     }
 
     [HttpPut("staff/personal")]
     public async Task<IActionResult> UpdateStaffPersonalInfo([FromBody] StaffUpdateDto updateDto)
     {
-        var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        var roleClaim = User.FindFirstValue(ClaimTypes.Role);
-        
-        if (string.IsNullOrEmpty(userIdClaim)) 
+        // You'll need to get userId and role from the request body instead of claims
+        if (updateDto.RoleId <= 0 || string.IsNullOrEmpty(updateDto.Role))
         {
-            return Unauthorized();
-        }
-    
-        if (!int.TryParse(userIdClaim, out var userId))
-        {
-            return BadRequest("Invalid user ID format");
+            return BadRequest("Both role and roleId must be provided and valid.");
         }
 
-        var result = await _userService.UpdateStaffPersonalInfo(updateDto, userId, roleClaim);
-        return result ? Ok() : BadRequest();
+        var result = await _userService.UpdateStaffPersonalInfo(updateDto, updateDto.RoleId, updateDto.Role);
+        return result ? Ok() : BadRequest("Failed to update personal information");
     }
 
     [HttpDelete]
