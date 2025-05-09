@@ -3,6 +3,7 @@ import HomeNavBar from '../components/NavBars/HomeNavBar.jsx';
 import { useState } from 'react';
 import RegisterModal from '../components/Modals/RegisterModal.jsx';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Home = () => {
 
@@ -15,18 +16,40 @@ const Home = () => {
 
     const [showRegisterModal, setShowRegisterModal] = useState(false);
 
-    const handleContactUs = (event) => {
+    const handleContactUs = async (event) => {
         event.preventDefault();
 
-        setContactMessage("Thank you for reaching out! We'll get back to you soon.");
+        try {
+            const response = await axios.post('http://localhost:5067/api/Feedback/submit', {
+              "fullName": name, 
+              "email": email,
+              "message": message
+            });
+            console.log(response.data); 
 
-        setName("");
-        setEmail("");
-        setMessage("");
+            if(response.status == 200)
+            {
+                setContactMessage("Thank you for reaching out! We'll get back to you soon.");
 
-        setTimeout(() => {
-            setContactMessage("");
-        }, 5000);
+                setName("");
+                setEmail("");
+                setMessage("");
+        
+                setTimeout(() => {
+                    setContactMessage("");
+                }, 5000);
+            } 
+          } catch (error) {
+            console.error('There was an error posting the data:', error);
+
+            setContactMessage("There was an unintentional error. Sorry for the trouble.");
+    
+            setTimeout(() => {
+                setContactMessage("");
+            }, 5000);
+          }
+
+
     };
 
     const handleOpenSignUp = () => {
@@ -271,7 +294,7 @@ const Home = () => {
                     </div>
                 </div>
 
-                {/* Optional Footer */}
+                {/* Footer */}
                 <div className="bg-light text-center p-3 border-top rounded-pill w-100">
                     <div className="container">
                         <p className="mb-0">© 2025 Nimbus' PawPals. All rights reserved.</p>

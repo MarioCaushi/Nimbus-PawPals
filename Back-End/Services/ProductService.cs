@@ -37,18 +37,18 @@ public class ProductService : IProductService
         var query = _context.Products.AsQueryable();
 
         // Apply search word filter (both name and description)
-        if (!string.IsNullOrEmpty(searchDto.SearchWord))
+        if (!string.IsNullOrEmpty(searchDto.SearchWord.Trim()))
         {
             query = query.Where(p => 
-                p.Name.Contains(searchDto.SearchWord) || 
-                (p.Description != null && p.Description.Contains(searchDto.SearchWord))
+                p.Name.ToLower().Trim().Contains(searchDto.SearchWord.ToLower().Trim()) || 
+                (p.Description != null && p.Description.ToLower().Trim().Contains(searchDto.SearchWord.ToLower().Trim()))
             );
         }
 
         // Apply category filter
-        if (!string.IsNullOrEmpty(searchDto.Category))
+        if (!string.IsNullOrEmpty(searchDto.Category.Trim()))
         {
-            query = query.Where(p => p.Category == searchDto.Category);
+            query = query.Where(p => p.Category.ToLower().Trim() == searchDto.Category.ToLower().Trim());
         }
 
         // Apply price range filter
@@ -62,9 +62,9 @@ public class ProductService : IProductService
         }
 
         // Apply animal type filter
-        if (!string.IsNullOrEmpty(searchDto.AnimalType))
+        if (!string.IsNullOrEmpty(searchDto.AnimalType.Trim().ToLower()))
         {
-            query = query.Where(p => p.AnimalType == searchDto.AnimalType);
+            query = query.Where(p => p.AnimalType.ToLower().Trim() == searchDto.AnimalType.ToLower().Trim());
         }
 
         return await query

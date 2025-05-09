@@ -1,11 +1,22 @@
 import React from 'react';
 import HomeNavBar from '../NavBars/HomeNavBar';
+import StaffNavBar from "./StaffNavBar"
 
 const NavigationBar = ({ loggedIn, role }) => {
     const getNavBar = () => {
-        // Since other NavBars are not implemented, default to HomeNavBar
-        // This approach will also render HomeNavBar when not logged in
-        return <HomeNavBar />;
+
+        if(!loggedIn)
+        {
+            return <HomeNavBar />;
+        }
+        else if( role !== 'Client')
+        {
+            return <StaffNavBar/>;
+        }
+        else
+        {
+            return ;
+        }
     };
 
     return (

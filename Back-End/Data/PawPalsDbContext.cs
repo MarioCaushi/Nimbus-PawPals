@@ -48,6 +48,9 @@ public partial class PawPalsDbContext : DbContext
     public virtual DbSet<UserAuth> UserAuths { get; set; }
     
 
+
+
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder
