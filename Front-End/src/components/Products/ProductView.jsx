@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ProductFilter from './ProductFilter';
 import axios from "axios";
+import AddProductModal from '../Modals/ProductModals/AddProductModal';
+import EditProductModal from '../Modals/ProductModals/EditProductModal';
 
 const ProductView = ({ role }) => {
 
@@ -15,11 +17,25 @@ const ProductView = ({ role }) => {
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
 
-    const [filtersApplied, setFiltersApplied] = useState(false);
+    //  Dealing with Add Product Modal
+    const [showModal, setShowModal] = useState(false);
+    const openModal = () => setShowModal(true);
+    const closeModal = () => setShowModal(false);
+
+    const [toggle, setToggle] = useState(false);
+    const handleToggle = () => {
+        setToggle(prev => !prev)
+        console.log("Added state changed to:", !toggle);
+    };
+
+    // Dealing with Edit Product Modal
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editProduct, setEditProduct] = useState(null);
+
 
     useEffect(() => {
         getAPI();
-    }, []);
+    }, [toggle]);
 
     const getAPI = async () => {
         try {
@@ -50,11 +66,6 @@ const ProductView = ({ role }) => {
         setSearchTerm('');
     }
 
-    // Function to filter products based on the selected filters every time filtersApplied changes
-    useEffect(() => {
-        filterAPI();
-    }, [filtersApplied]);
-
 
     const handleApplyFilters = async (e, filter, choice) => {
         e.preventDefault();
@@ -70,8 +81,11 @@ const ProductView = ({ role }) => {
         } else if (filter === 'searchTerm') {
             setSearchTerm(choice);
         } else if (filter === 'ApplyFilters') {
-            await filterAPI(); // Call API directly here
+            await new Promise(resolve => setTimeout(resolve, 0)); // let searchTerm update
+            filterAPI();
         }
+
+
     };
 
     const filterAPI = async () => {
@@ -80,7 +94,7 @@ const ProductView = ({ role }) => {
             animalType: animalType,
             minPrice: minPrice,
             maxPrice: maxPrice,
-            searchTerm: searchTerm
+            searchWord: searchTerm
         };
 
         // Remove empty filter parameters
@@ -102,6 +116,27 @@ const ProductView = ({ role }) => {
             console.error("Error with the filter API call", error);
         }
     };
+
+    const handleDeleteProduct = async (productId) => {
+
+        if (!confirm("Are you sure you want to delete this product?")) {
+            return;
+        }
+        try {
+            const response = await axios.delete(`http://localhost:5067/api/Product/${productId}`);
+            if (response.status === 200) {
+                setProducts(prev => ({
+                    ...prev,
+                    Products: prev.Products.filter(product => product.productId !== productId)
+                }));
+                setSelectedProduct(null);
+            } else {
+                console.error("Error deleting product from API");
+            }
+        } catch (error) {
+            console.error("Error with the delete API call", error);
+        }
+    }
 
 
     return (
@@ -137,7 +172,7 @@ const ProductView = ({ role }) => {
                         onMouseOut={(e) => {
                             e.target.style.backgroundColor = '#4CAF50';
                         }}
-                        onClick={() => {/* Handle add product logic here */ }}>
+                        onClick={openModal}>
                         Add Product
                     </button>
                 )}
@@ -156,6 +191,13 @@ const ProductView = ({ role }) => {
                     }}
                     value={searchTerm}
                     onChange={(e) => handleApplyFilters(e, 'searchTerm', e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault(); // optional, but good to have
+                            console.log("Enter pressed"); // test line
+                            handleApplyFilters(e, 'ApplyFilters', null);
+                        }
+                    }}
                 />
                 <button type="button" className="btn me-2" style={{
                     backgroundColor: 'white',
@@ -300,7 +342,7 @@ const ProductView = ({ role }) => {
                                             }}
                                             onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
                                             onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
-                                            onClick={() => {/* Handle delete logic here */ }}
+                                            onClick={() => { handleDeleteProduct(selectedProduct["productId"]) }}
                                         >
                                             Delete
                                         </button>
@@ -315,7 +357,12 @@ const ProductView = ({ role }) => {
                                             }}
                                             onMouseOver={(e) => e.target.style.backgroundColor = '#138496'} // Slightly darker on hover
                                             onMouseOut={(e) => e.target.style.backgroundColor = '#17a2b8'}
-                                            onClick={() => {/* Handle edit logic here */ }}
+                                            onClick={() => {
+                                                setShowEditModal(true);        // open edit modal
+                                                // pass a product directly — don’t clear selectedProduct yet
+                                                setEditProduct(selectedProduct);
+                                                setSelectedProduct(null);      // now hide product detail modal
+                                            }}
                                         >
                                             Edit
                                         </button>
@@ -333,6 +380,28 @@ const ProductView = ({ role }) => {
                     </div>
                 </div>
             )}
+
+            <AddProductModal
+                show={showModal}
+                onClose={closeModal}
+                handleToggle={handleToggle}
+                categories={products["Types"]["categories"]}
+                animalTypes={products["Types"]["animalTypes"]}
+            />
+
+            <EditProductModal
+                show={showEditModal}
+                onClose={() => {
+                    setShowEditModal(false);
+                    setEditProduct(null);
+                }}
+                handleToggle={handleToggle}
+                product={editProduct}
+                categories={products["Types"]["categories"]}
+                animalTypes={products["Types"]["animalTypes"]}
+            />
+
+
         </div>
     );
 };
