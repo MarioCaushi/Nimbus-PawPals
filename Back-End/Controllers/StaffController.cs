@@ -22,8 +22,8 @@ public class StaffController : ControllerBase
         var staff = await _staffService.GetAllStaff();
         return Ok(staff);
     }
-    [HttpGet("search")]
-    public async Task<IActionResult> SearchStaff([FromQuery] StaffSearchDto searchDto)
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchStaff([FromBody] StaffSearchDto searchDto)
     {
         var staff = await _staffService.SearchStaff(searchDto);
         return Ok(staff);

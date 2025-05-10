@@ -18,16 +18,16 @@ public class UserController : ControllerBase
         _userService = userService;
     }
  
-    [HttpGet("staff")]
-    public async Task<IActionResult> GetStaffUser([FromQuery] string role, [FromQuery] int roleId)
+    [HttpPost("staff")]
+    public async Task<IActionResult> GetStaffUser([FromBody] UserRetrievalDto request)
     {
-        if (string.IsNullOrWhiteSpace(role) || roleId <= 0)
+        if (string.IsNullOrWhiteSpace(request.Role) || request.RoleId <= 0)
         {
             return BadRequest("Both role and roleId must be provided and valid.");
         }
 
-        var user = await _userService.GetStaffUser(roleId, role);
-    
+        var user = await _userService.GetStaffUser(request.RoleId, request.Role);
+
         if (user == null)
         {
             return NotFound("Staff member not found.");
@@ -35,6 +35,7 @@ public class UserController : ControllerBase
 
         return Ok(user);
     }
+
 
     [HttpPut("staff/personal")]
     public async Task<IActionResult> UpdateStaffPersonalInfo([FromBody] StaffUpdateDto updateDto)

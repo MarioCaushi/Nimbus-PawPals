@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Back_End.Models;
 
@@ -13,8 +14,9 @@ public partial class Salary
 
     public decimal OvertimeRate { get; set; }
 
-    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
 
+    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+    
     public virtual ICollection<Groomer> Groomers { get; set; } = new List<Groomer>();
 
     public virtual ICollection<Manager> Managers { get; set; } = new List<Manager>();
