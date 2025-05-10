@@ -2,6 +2,7 @@ import React from 'react';
 import HomeNavBar from '../NavBars/HomeNavBar';
 import StaffNavBar from "./StaffNavBar"
 
+
 const NavigationBar = ({ loggedIn, role }) => {
     const getNavBar = () => {
 
