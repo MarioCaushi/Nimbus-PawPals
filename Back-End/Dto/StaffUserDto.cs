@@ -1,20 +1,16 @@
-// StaffUserDto.cs
-namespace Back_End.Dto;
+using Back_End.Models;
 
 public class StaffUserDto
 {
+    // Universal fields
     public string? Username { get; set; }
     public string? Password { get; set; }
-    public string? FirstName { get; set; }
-    public string? LastName { get; set; }
-    public string? Email { get; set; }
-    public string? ContactNumber { get; set; }
-    public string? Address { get; set; }
-    public DateOnly Birthday { get; set; }
-    public DateTime HireDate { get; set; }
     public decimal BaseSalary { get; set; }
-    public string? PayCycle { get; set; }
-    public string? Specialty { get; set; }
-    public string? Qualifications { get; set; }
-    public int PersonalId { get; set; }
+    public decimal? OvertimeRate { get; set; }
+
+    // Optional role-based models
+    public Doctor? Doctor { get; set; }
+    public Groomer? Groomer { get; set; }
+    public Receptionist? Receptionist { get; set; }
+    public Manager? Manager { get; set; }
 }
