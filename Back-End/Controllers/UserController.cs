@@ -50,8 +50,7 @@ public class UserController : ControllerBase
         return result ? Ok() : BadRequest("Failed to update personal information");
     }
 
-    [HttpDelete]
-    [Consumes("application/json")]
+    [HttpDelete ("delete")]
     public async Task<IActionResult> DeleteUser([FromBody] UserDeleteDto deleteDto)
     {
         var result = await _userService.DeleteUser(deleteDto);
