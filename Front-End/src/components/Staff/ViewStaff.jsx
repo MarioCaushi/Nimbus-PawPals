@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import ViewDetailsModal from '../Modals/StaffModals/ViewDetailsModal';
 
 const ViewStaff = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -10,10 +11,33 @@ const ViewStaff = () => {
 
     const [tempStaffList, setTempStaffList] = useState({});
 
+    // To deal with view details modal
+    const [showModal, setShowModal] = useState(false);
+    const [selectedStaff, setSelectedStaff] = useState({
+        role: '',
+        roleId: '',
+    });
+
+    const [triggerAPI, setTriggerAPI] = useState(false);
+
+    const handleTriggerAPI = () => {
+        setTriggerAPI(prev => !prev);
+        onClose();
+    };
+
+    const onClose = () => {
+        setShowModal(false);
+    };
+
+    const handleDetailsClick = (staff) => {
+        setSelectedStaff(staff);
+        setShowModal(true);
+    }
+
     useEffect(() => {
         getStaffAPI();
 
-    }, [])
+    }, [triggerAPI])
 
 const handleSearch = async () => {
 
@@ -208,6 +232,9 @@ const handleSearch = async () => {
                                                 fontSize: '0.85rem',
                                                 width: '100%'
                                             }}
+                                            onClick={() => {
+                                                handleDetailsClick({role: roleLabel, roleId: id,});
+                                            }}
                                         >
                                             View Details
                                         </button>
@@ -219,10 +246,18 @@ const handleSearch = async () => {
 
 
 
-
-
                 </div>
             </div>
+
+            { showModal && 
+                <ViewDetailsModal
+                    data={selectedStaff}
+                    onClose={onClose}
+                    handleTriggerAPI={handleTriggerAPI}
+                />
+            }
+
+
         </>
     );
 };

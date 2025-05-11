@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const EditPersonalInfo = ({ userInfo }) => {
+const EditPersonalInfo = ({ userInfo, handleToggle }) => {
     const [editableUserInfo, setEditableUserInfo] = useState(userInfo || {});
     const [message, setMessage] = useState(null);
     const [messageType, setMessageType] = useState(''); // 'success' or 'error'
@@ -69,6 +69,7 @@ const EditPersonalInfo = ({ userInfo }) => {
             if (response.status === 200) {
                 setMessage('User info updated successfully.');
                 setMessageType('success');
+                handleToggle();
             } else {
                 setMessage('Failed to update user info.');
                 setMessageType('error');

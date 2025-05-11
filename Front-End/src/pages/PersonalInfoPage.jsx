@@ -14,6 +14,11 @@ const PersonalInfo = () => {
     const [userId, setUserId] = useState('');
 
     const [userData, setUserData] = useState({});
+    const [toggle, setToggle] = useState(false);
+
+    const handleToggle = () => {
+        setToggle(prev => !prev);
+    }
 
   
   useEffect(() => {
@@ -36,7 +41,7 @@ const PersonalInfo = () => {
   if (loggedIn && role && userId) {
     userInfoAPI();
   }
-}, [loggedIn, role, userId]);
+}, [loggedIn, role, userId, toggle]);
 
   // Function to fetch user info based on role and userId
 const userInfoAPI = async () => {
@@ -103,7 +108,7 @@ const userInfoAPI = async () => {
       <div className="container-fluid">
         <h2 className='mt-3 mb-0'>Personal Info</h2>
 
-        {editMode ? <EditPersonalInfo userInfo={userData} /> : <ViewPersonalInfo userInfo={userData} />}
+        {editMode ? <EditPersonalInfo handleToggle={handleToggle} userInfo={userData} /> : <ViewPersonalInfo userInfo={userData} />}
         <button
           className="btn btn-light mt-0" // Using 'btn-light' for a soft appearance on the pink background
           type="button"
