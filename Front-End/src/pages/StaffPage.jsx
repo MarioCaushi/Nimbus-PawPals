@@ -25,7 +25,7 @@ const StaffPage = () => {
       <NavigationBar loggedIn={loggedIn} role={role} />
       <div className="container mt-5">
         <h2>Staff Page</h2>
-        <ViewStaff role={role} />
+        <ViewStaff roleLoggedIn={role} />
       </div>
     </div>
 

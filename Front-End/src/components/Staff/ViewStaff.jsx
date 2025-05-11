@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ViewDetailsModal from '../Modals/StaffModals/ViewDetailsModal';
 import EditDetailsModal from '../Modals/StaffModals/EditDetailsModal';
+import AddStaffModal from '../Modals/StaffModals/AddStaffModal';
 
-const ViewStaff = () => {
+const ViewStaff = (roleLoggedIn) => {
+    // To deal with the search bar
     const [searchQuery, setSearchQuery] = useState('');
     const [role, setRole] = useState('');
 
@@ -11,6 +13,7 @@ const ViewStaff = () => {
     const [staffRoles, setStaffRoles] = useState([]);
 
     const [tempStaffList, setTempStaffList] = useState({});
+
 
     // To deal with view details modal
     const [showModal, setShowModal] = useState(false);
@@ -25,6 +28,33 @@ const ViewStaff = () => {
     const [editUser, setEditUser] = useState({});
 
     const [showEditModal, setShowEditModal] = useState(false);
+
+
+    // To deal with staff salaries
+    const [salaries, setSalaries] = useState({});
+
+    //To deal with the add staff modal
+    const [showAddStaffModal, setShowAddStaffModal] = useState(false);
+
+    const handleAddStaffModal = () => {
+        setShowAddStaffModal(!showAddStaffModal);
+    };
+
+    const getSalariesAPI = async () => {
+
+        try {
+            const response = await axios.get('http://localhost:5067/api/Staff/salaries');
+            if (response.status === 200) {
+                setSalaries(response.data);
+                console.log("Salaries fetched successfully", response.data);
+            } else {
+                console.error("Error fetching salaries from API");
+            }
+        } catch (error) {
+            console.error("Error with the getSalaries API call", error);
+        }
+    };
+
     const openEditModal = (data) => {
         setEditUser(data);
         setShowEditModal(true);
@@ -57,31 +87,31 @@ const ViewStaff = () => {
 
     }, [triggerAPI])
 
-const handleSearch = async () => {
+    const handleSearch = async () => {
 
-    if (!searchQuery && !role) {
-        console.error("Please enter a search query or select a role");
-        setTempStaffList(staffList);
-        return;
-    }
-    const searchParams = {
-        searchWord: searchQuery,
-        role: role
-    };
-
-
-    try {
-        const response = await axios.post('http://localhost:5067/api/Staff/search', searchParams);
-        if (response.status === 200) {
-            setTempStaffList(response.data);
-            console.log("Staff list fetched successfully", response.data);
-        } else {
-            console.error("Error fetching staff from API");
+        if (!searchQuery && !role) {
+            console.error("Please enter a search query or select a role");
+            setTempStaffList(staffList);
+            return;
         }
-    } catch (error) {
-        console.error("Error with the search API call", error);
-    }
-};
+        const searchParams = {
+            searchWord: searchQuery,
+            role: role
+        };
+
+
+        try {
+            const response = await axios.post('http://localhost:5067/api/Staff/search', searchParams);
+            if (response.status === 200) {
+                setTempStaffList(response.data);
+                console.log("Staff list fetched successfully", response.data);
+            } else {
+                console.error("Error fetching staff from API");
+            }
+        } catch (error) {
+            console.error("Error with the search API call", error);
+        }
+    };
 
 
     const handleClear = () => {
@@ -90,9 +120,18 @@ const handleSearch = async () => {
     };
 
 
-    const handleAddStaff = () => {
-        console.log('Add new staff');
+    const handleAddStaff = async () => {
+        if (!role) {
+
+            alert('Please select a role firs!!!');
+            return;
+        }
+
+        await getSalariesAPI();
+        handleAddStaffModal();
+
     };
+
 
     const getStaffAPI = async () => {
         try {
@@ -119,14 +158,20 @@ const handleSearch = async () => {
             <div className="container my-5">
                 <div className="d-flex justify-content-center">
                     <div className="d-flex align-items-center justify-content-center flex-wrap gap-3" style={{ maxWidth: '1000px', width: '100%' }}>
-                        <button className="btn" onClick={handleAddStaff} style={{
-                            color: 'white',
-                            backgroundColor: '#f06292',
-                            borderColor: '#f06292',
-                            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                            borderRadius: '12px',
-                            padding: '8px 16px'
-                        }}>Add Staff</button>
+                        {roleLoggedIn.roleLoggedIn.toLowerCase().trim() === 'manager' && (
+                            <div>
+                                <button className="btn" onClick={handleAddStaff} style={{
+                                    color: 'white',
+                                    backgroundColor: '#f06292',
+                                    borderColor: '#f06292',
+                                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+                                    borderRadius: '12px',
+                                    padding: '8px 16px'
+                                }}>
+                                    Add Staff
+                                </button>
+                            </div>
+                        )}
 
                         <select
                             className="form-select"
@@ -179,16 +224,34 @@ const handleSearch = async () => {
                         }}>Clear</button>
                     </div>
                 </div>
-                <span style={{
-                    display: 'block',
-                    marginTop: '10px',
-                    textAlign: 'center',
-                    fontSize: '0.9rem',
-                    color: '#6c757d',
-                    fontStyle: 'italic'
-                }}>
-                    Select what type of staff you want to Add / Search first
-                </span>
+                {roleLoggedIn.roleLoggedIn.toLowerCase().trim() === 'manager' ? (
+                    <span
+                        style={{
+                            display: 'block',
+                            marginTop: '10px',
+                            textAlign: 'center',
+                            fontSize: '0.9rem',
+                            color: '#6c757d',
+                            fontStyle: 'italic',
+                        }}
+                    >
+                        Select what type of staff you want to Add / Search first
+                    </span>
+                ) : (
+                    <span
+                        style={{
+                            display: 'block',
+                            marginTop: '10px',
+                            textAlign: 'center',
+                            fontSize: '0.9rem',
+                            color: '#6c757d',
+                            fontStyle: 'italic',
+                        }}
+                    >
+                        Search staff members
+                    </span>
+                )}
+
             </div>
 
             {/* Scrollable  Card Grid */}
@@ -251,7 +314,7 @@ const handleSearch = async () => {
                                                 width: '100%'
                                             }}
                                             onClick={() => {
-                                                handleDetailsClick({role: roleLabel, roleId: id,});
+                                                handleDetailsClick({ role: roleLabel, roleId: id, });
                                             }}
                                         >
                                             View Details
@@ -267,23 +330,34 @@ const handleSearch = async () => {
                 </div>
             </div>
 
-            { showModal && 
+            {showModal &&
                 <ViewDetailsModal
                     data={selectedStaff}
                     onClose={onClose}
                     triggerAPI={triggerAPI}
                     handleTriggerAPI={handleTriggerAPI}
                     handleEditModal={openEditModal}
+                    roleLoggedIn={roleLoggedIn}
                 />
             }
 
             {showEditModal && (
-            <EditDetailsModal
-              userInfo={editUser}
-              onClose={closeEditModal}
-             handleTriggerAPI={handleTriggerAPI}
-            />
-          )}
+                <EditDetailsModal
+                    userInfo={editUser}
+                    onClose={closeEditModal}
+                    handleTriggerAPI={handleTriggerAPI}
+                />
+            )}
+
+            {showAddStaffModal && (
+                <AddStaffModal
+                    role={role}
+                    handleAddStaffModal={handleAddStaffModal}
+                    handleTriggerAPI={handleTriggerAPI}
+                    salaryList={salaries}
+                />
+            )}
+
 
 
         </>
