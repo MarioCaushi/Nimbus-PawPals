@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const ViewDetailsModal = ({ data, onClose, handleTriggerAPI }) => {
+
+const ViewDetailsModal = ({ data, onClose, handleTriggerAPI, handleEditModal, triggerAPI }) => {
   const [userData, setUserData] = useState({});
 
   useEffect(() => {
     userInfoAPI();
-  }, []);
+  }, [triggerAPI]);
 
   const userInfoAPI = async () => {
     try {
@@ -65,6 +66,7 @@ const ViewDetailsModal = ({ data, onClose, handleTriggerAPI }) => {
       if (response.status === 200) {
         console.log('User deleted successfully');
         handleTriggerAPI();
+        onClose();
       }
     } catch (error) {
       console.error('Error deleting user:', error);
@@ -135,7 +137,7 @@ const ViewDetailsModal = ({ data, onClose, handleTriggerAPI }) => {
                 e.target.style.backgroundColor = 'white';
                 e.target.style.color = '#388e3c';
               }}
-              onClick={() => console.log('Edit clicked')}
+              onClick={() => handleEditModal(userData)}
             >
               ✏️ Edit
             </button>
@@ -160,10 +162,11 @@ const ViewDetailsModal = ({ data, onClose, handleTriggerAPI }) => {
           </div>
 
 
-
         </div>
       </div>
     </div>
+
+
   );
 };
 

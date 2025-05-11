@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ViewDetailsModal from '../Modals/StaffModals/ViewDetailsModal';
+import EditDetailsModal from '../Modals/StaffModals/EditDetailsModal';
 
 const ViewStaff = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -20,9 +21,26 @@ const ViewStaff = () => {
 
     const [triggerAPI, setTriggerAPI] = useState(false);
 
+    // To deal with the edit info modal
+    const [editUser, setEditUser] = useState({});
+
+    const [showEditModal, setShowEditModal] = useState(false);
+    const openEditModal = (data) => {
+        setEditUser(data);
+        setShowEditModal(true);
+        setShowModal(false);
+    };
+
+    const closeEditModal = () => {
+        setShowEditModal(false);
+        setEditUser({});
+        setShowModal(true);
+    };
+
+
+
     const handleTriggerAPI = () => {
         setTriggerAPI(prev => !prev);
-        onClose();
     };
 
     const onClose = () => {
@@ -253,9 +271,19 @@ const handleSearch = async () => {
                 <ViewDetailsModal
                     data={selectedStaff}
                     onClose={onClose}
+                    triggerAPI={triggerAPI}
                     handleTriggerAPI={handleTriggerAPI}
+                    handleEditModal={openEditModal}
                 />
             }
+
+            {showEditModal && (
+            <EditDetailsModal
+              userInfo={editUser}
+              onClose={closeEditModal}
+             handleTriggerAPI={handleTriggerAPI}
+            />
+          )}
 
 
         </>
