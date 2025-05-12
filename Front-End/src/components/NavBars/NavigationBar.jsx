@@ -12,7 +12,7 @@ const NavigationBar = ({ loggedIn, role }) => {
         }
         else if( role !== 'Client')
         {
-            return <StaffNavBar/>;
+            return <StaffNavBar role={role} />;
         }
         else
         {
