@@ -6,4 +6,6 @@ public interface IStaffService
 {
     Task<StaffListDto> GetAllStaff();   
     Task<StaffListDto> SearchStaff(StaffSearchDto searchDto);
+
+    Task<List<SalaryInfoDto>> GetAllSalaryOptions();
 }

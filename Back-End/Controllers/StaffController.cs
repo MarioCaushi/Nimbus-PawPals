@@ -28,4 +28,12 @@ public class StaffController : ControllerBase
         var staff = await _staffService.SearchStaff(searchDto);
         return Ok(staff);
     }
+    
+    [HttpGet("salaries")]
+    public async Task<IActionResult> GetAllSalaries()
+    {
+        var salaries = await _staffService.GetAllSalaryOptions();
+        return Ok(salaries);
+    }
+
 }

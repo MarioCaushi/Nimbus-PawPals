@@ -162,5 +162,75 @@ public class StaffService : IStaffService
             Qualification = r.Qualification
         }).ToListAsync();
     }
+    
+    public async Task<List<SalaryInfoDto>> GetAllSalaryOptions()
+    {
+        var salaries = await _context.Salaries
+            .Include(s => s.Doctors)
+            .Include(s => s.Groomers)
+            .Include(s => s.Managers)
+            .Include(s => s.Receptionists)
+            .ToListAsync();
+
+        var result = new List<SalaryInfoDto>();
+
+        foreach (var s in salaries)
+        {
+            if (s.Doctors.Any())
+            {
+                foreach (var doc in s.Doctors)
+                {
+                    result.Add(new SalaryInfoDto
+                    {
+                        SalaryId = s.SalaryId,
+                        BaseSalary = s.BaseSalary,
+                        OvertimeRate = s.OvertimeRate,
+                        PayCycle = s.PayCycle,
+                        Role = "Doctor",
+                        Specialty = doc.Specialty
+                    });
+                }
+            }
+
+            if (s.Groomers.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Groomer"
+                });
+            }
+
+            if (s.Receptionists.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Receptionist"
+                });
+            }
+
+            if (s.Managers.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Manager"
+                });
+            }
+        }
+
+        return result;
+    }
+
 
 }

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const EditPersonalInfo = ({ userInfo, handleToggle }) => {
+const EditDetailsModal = ({ userInfo, onClose, handleTriggerAPI }) => {
     const [editableUserInfo, setEditableUserInfo] = useState(userInfo || {});
     const [message, setMessage] = useState(null);
-    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+    const [messageType, setMessageType] = useState('');
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -31,22 +31,16 @@ const EditPersonalInfo = ({ userInfo, handleToggle }) => {
 
     const handleDiscard = () => {
         setEditableUserInfo(userInfo);
-        console.log('Changes Discarded');
     };
 
     const editAPI = async () => {
-
-        console.log('Editable User Info:', editableUserInfo);
-
         const role = userInfo.role?.toLowerCase();
-
         const roleId =
             role === 'manager' ? userInfo.managerId :
                 role === 'doctor' ? userInfo.doctorId :
                     role === 'groomer' ? userInfo.groomerId :
                         role === 'receptionist' ? userInfo.receptionistId :
                             null;
-
 
         const payload = {
             role: userInfo.role,
@@ -61,15 +55,13 @@ const EditPersonalInfo = ({ userInfo, handleToggle }) => {
             birthday: editableUserInfo.birthday
         };
 
-
-        console.log('Payload:', payload);
-
         try {
             const response = await axios.put('http://localhost:5067/api/User/staff/personal', payload);
             if (response.status === 200) {
                 setMessage('User info updated successfully.');
                 setMessageType('success');
-                handleToggle();
+                handleTriggerAPI();
+
             } else {
                 setMessage('Failed to update user info.');
                 setMessageType('error');
@@ -89,29 +81,26 @@ const EditPersonalInfo = ({ userInfo, handleToggle }) => {
         }, 3000);
     };
 
-    const excludedKeys = [, 'role', 'managerId', 'doctorId', 'groomerId', 'receptionistId', 'firstName', 'lastName', "baseSalary", 'hireDate', 'personalId', 'overtimeRate', 'birthday', 'firstName', 'lastName', 'email',];
-
+    const excludedKeys = [
+        'role', 'managerId', 'doctorId', 'groomerId', 'receptionistId', 'firstName', 'lastName',
+        'baseSalary', 'hireDate', 'personalId', 'overtimeRate', 'birthday', 'email'
+    ];
 
     return (
-        <div className="container my-5">
-            <form>
-                <div className="card shadow" style={{
-                    borderRadius: '15px',
-                    backgroundColor: '#e1f5fe',
-                    border: '1px solid rgb(189, 230, 249)',
-                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.1)'
-                }}>
-                    <div className="card-header" style={{ backgroundColor: '#b3e5fc', color: 'black' }}>
-                        Edit - Personal Information
+        <div className="modal d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}>
+            <div className="modal-dialog modal-dialog-centered modal-lg">
+                <div className="modal-content shadow border-0 rounded-4" style={{ backgroundColor: '#fefefe' }}>
+                    <div className="modal-header bg-info text-white">
+                        <h5 className="modal-title">Edit Staff Member</h5>
+                        <button type="button" className="btn-close" onClick={onClose}></button>
                     </div>
-                    <div className="card-body">
+                    <div className="modal-body px-4 py-3">
                         {message && (
                             <div className={`alert alert-${messageType === 'success' ? 'success' : 'danger'}`} role="alert">
                                 {message}
                             </div>
                         )}
                         <div className="row">
-
                             {Object.entries(editableUserInfo)
                                 .filter(([key]) => !excludedKeys.includes(key))
                                 .map(([key, value]) => {
@@ -125,31 +114,43 @@ const EditPersonalInfo = ({ userInfo, handleToggle }) => {
                                             <label htmlFor={key} className="form-label text-capitalize">
                                                 {key.replace(/([A-Z])/g, ' $1').trim()}
                                             </label>
-                                            <input
-                                                type={key === 'password' ? 'password' : inputType}
-                                                className="form-control"
-                                                id={key}
-                                                name={key}
-                                                value={editableUserInfo[key] || ''}
-                                                placeholder={key === 'password' ? 'Enter new password' : ''}
-                                                onChange={handleChange}
-                                            />
+                                            {key === 'specialty' && userInfo.role?.toLowerCase() === 'doctor' ? (
+                                                <select
+                                                    className="form-select"
+                                                    id={key}
+                                                    name={key}
+                                                    value={editableUserInfo[key] || ''}
+                                                    onChange={handleChange}
+                                                >
+                                                    <option value="">Select Specialty</option>
+                                                    <option value="General Veterinary">General Veterinary</option>
+                                                    <option value="Surgery">Surgery</option>
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type={inputType}
+                                                    className="form-control"
+                                                    id={key}
+                                                    name={key}
+                                                    value={editableUserInfo[key] || ''}
+                                                    onChange={handleChange}
+                                                />
+                                            )}
 
                                         </div>
                                     );
-
                                 })}
                         </div>
                     </div>
-                    <div className="card-footer d-flex justify-content-end">
+                    <div className="modal-footer bg-light d-flex justify-content-end">
+                        <button type="button" className="btn btn-outline-danger" onClick={onClose} >Close</button>
                         <button type="button" className="btn btn-secondary me-2" onClick={handleDiscard}>Discard</button>
                         <button type="button" className="btn btn-success" onClick={handleSave}>Save</button>
                     </div>
                 </div>
-            </form>
-
+            </div>
         </div>
     );
 };
 
-export default EditPersonalInfo;
+export default EditDetailsModal;

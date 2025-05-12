@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from "axios";
 
-const RegisterModal = ({ show, handleClose }) => {
+const RegisterModal = ({ show, handleClose, loggedIn, handleTrigger }) => {
 
     // Deals with the display of the modal
     const showHideClassName = show ? "modal show d-block" : "modal d-none";
@@ -100,23 +100,23 @@ const RegisterModal = ({ show, handleClose }) => {
             if(response.status == 200)
                 {
                     setError(false);
-                    setMessage("Registered successfully... Now you can log in");
+                    setMessage("Registered successfully... ");
         
                     setTimeout(() =>
                         {
                             setError(false);
                             setMessage("");
-                            handleClose();
                         },2000);
 
                         resetForm();
+                        handleTrigger();
                         return;
                 }
         }
         catch(error)
         {
             setError(true);
-            setMessage("Username must be unique");
+            setMessage("Username/Email must be unique");
 
             setTimeout(() =>
                 {
@@ -166,7 +166,9 @@ const RegisterModal = ({ show, handleClose }) => {
             <div className="modal-dialog modal-dialog-centered modal-lg">
                 <div className="modal-content shadow-lg" style={{ borderRadius: '15px', border: 'none' }}>
                     <div className="modal-header" style={{ borderBottom: '2px solid #dee2e6', backgroundColor: '#f8f9fa' }}>
-                        <h5 className="modal-title" style={{ fontSize: '1.5rem' }}>Register</h5>
+                        <h5 className="modal-title" style={{ fontSize: '1.5rem' }}>
+                            {loggedIn ? "Add Client" : "Register"}
+                        </h5>
                         <button type="button" className="btn-close" onClick={handleClose} aria-label="Close"></button>
                     </div>
                     <div className="modal-body" style={{ padding: '2rem' }}>
@@ -240,11 +242,14 @@ const RegisterModal = ({ show, handleClose }) => {
 
                             <div className="d-flex gap-2 align-items-center justify-content-center">
                                 <button type="submit" className="btn btn-lg w-25" style={{
-                                    background: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)', // Gradient blue color
+                                    background: 'linear-gradient(to right, #4facfe 0%, #00f2fe 100%)',
                                     color: 'white',
                                     borderRadius: '12px',
                                     padding: '10px 0'
-                                }}>Register</button>
+                                }}>
+                                    {loggedIn ? "Add Client" : "Register"}
+                                </button>
+
                             </div>
                             {error && <div className="alert alert-danger mt-4 mb-0" role="alert">{message}</div>}
                             {(!error && message) && <div className="alert alert-success mt-4 mb-0" role="alert">{message}</div>}
