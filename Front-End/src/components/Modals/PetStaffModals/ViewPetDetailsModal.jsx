@@ -15,6 +15,21 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
     default: '🐾'
   };
 
+  const [showAddMedicalModal, setShowAddMedicalModal] = useState(false);
+  const [newRecord, setNewRecord] = useState({ date: '', description: '' });
+
+  const handleAddMedicalRecord = () => {
+    if (!newRecord.date || !newRecord.description) return;
+    medicalCharts.push({
+      date: newRecord.date,
+      description: newRecord.description,
+      petId: pet.petId
+    });
+    setShowAddMedicalModal(false);
+    setNewRecord({ date: '', description: '' });
+  };
+
+
   const emoji = speciesEmoji[pet.species] || speciesEmoji.default;
 
   // Mock data for medical charts and appointments
@@ -129,6 +144,14 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
       case 'medical':
         return (
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+            <div className="text-end mb-2">
+              <button
+                className="btn btn-sm btn-outline-success"
+                onClick={() => setShowAddMedicalModal(true)}
+              >
+                ➕ Add Record
+              </button>
+            </div>
             {medicalCharts.map((chart) => (
               <div
                 key={chart.medicalChartId}
@@ -241,6 +264,35 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
 
         </div>
       </div>
+
+      {showAddMedicalModal && (
+  <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content" style={{ borderRadius: '15px' }}>
+        <div className="modal-header bg-primary text-white">
+          <h5 className="modal-title">Add Medical Record</h5>
+          <button type="button" className="btn-close btn-close-white" onClick={() => setShowAddMedicalModal(false)}></button>
+        </div>
+        <div className="modal-body">
+          <div className="mb-3">
+            <label className="form-label">Date</label>
+            <input type="date" className="form-control" value={newRecord.date} onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })} />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Description</label>
+            <textarea className="form-control" rows={3} value={newRecord.description} onChange={(e) => setNewRecord({ ...newRecord, description: e.target.value })}></textarea>
+          </div>
+        </div>
+        <div className="modal-footer">
+          <button className="btn btn-outline-danger" onClick={() => setNewRecord({ date: '', description: '' })}>Discard</button>
+          <button className="btn btn-success" onClick={handleAddMedicalRecord}>Add</button>
+          <button className="btn btn-secondary" onClick={() => setShowAddMedicalModal(false)}>Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

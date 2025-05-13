@@ -103,7 +103,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
                     >
                         🐾 Add Pet
                     </button>
-)}
+                )}
 
 
                 <input
