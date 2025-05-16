@@ -32,4 +32,6 @@ public partial class UserAuth
     public virtual Manager? Manager { get; set; }
 
     public virtual Receptionist? Receptionist { get; set; }
+    // Add to your UserAuth model
+  
 }

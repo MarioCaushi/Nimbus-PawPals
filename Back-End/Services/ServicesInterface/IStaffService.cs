@@ -6,4 +6,5 @@ public interface IStaffService
 {
     Task<StaffListDto> GetAllStaff();   
     Task<StaffListDto> SearchStaff(StaffSearchDto searchDto);
+    Task<string?> AddStaff(AddStaffDto staffDto); 
 }
