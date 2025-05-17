@@ -28,6 +28,18 @@ public class StaffController : ControllerBase
         var staff = await _staffService.SearchStaff(searchDto);
         return Ok(staff);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> AddStaff([FromBody] AddStaffDto staffDto)
+    {
+        var error = await _staffService.AddStaff(staffDto);
+            
+        if (error == null)
+            return Ok();
+            
+        return BadRequest(error);
+    }
+
     
     [HttpGet("salaries")]
     public async Task<IActionResult> GetAllSalaries()
@@ -35,5 +47,6 @@ public class StaffController : ControllerBase
         var salaries = await _staffService.GetAllSalaryOptions();
         return Ok(salaries);
     }
+
 
 }

@@ -1,6 +1,7 @@
 // ProductService.cs in Back_End/Services
 using Back_End.Data;
 using Back_End.Dto;
+using Back_End.Models;
 using Back_End.Services.ServicesInterface;
 using Microsoft.EntityFrameworkCore;
 
@@ -118,5 +119,60 @@ public class ProductService : IProductService
             Categories = categories,
             AnimalTypes = animalTypes
         };
+    }
+    // In your ProductService implementation
+    public async Task<bool> AddProduct(ProductDto productDto)
+    {
+        try
+        {
+            var product = new Product
+            {
+                Name = productDto.Name,
+                Category = productDto.Category,
+                Price = productDto.Price,
+                Description = productDto.Description,
+                ImageUrl = productDto.ImageUrl,
+                AnimalType = productDto.AnimalType,
+                DateAdded = productDto.DateAdded
+            };
+
+            // Add to database (implementation depends on your ORM)
+            _context.Products.Add(product);
+            await _context.SaveChangesAsync();
+        
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+    // ProductService.cs
+    public async Task<bool> EditProduct(ProductDto productDto)
+    {
+        try
+        {
+            var existingProduct = await _context.Products.FindAsync(productDto.ProductId);
+        
+            if (existingProduct == null)
+                return false;
+
+            // Update the fields
+            existingProduct.Name = productDto.Name;
+            existingProduct.Category = productDto.Category;
+            existingProduct.Price = productDto.Price;
+            existingProduct.Description = productDto.Description;
+            existingProduct.ImageUrl = productDto.ImageUrl;
+            existingProduct.AnimalType = productDto.AnimalType;
+
+            _context.Products.Update(existingProduct);
+            await _context.SaveChangesAsync();
+        
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
