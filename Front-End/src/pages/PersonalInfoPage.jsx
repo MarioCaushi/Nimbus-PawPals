@@ -1,24 +1,99 @@
 import React from 'react';
-import StaffNavBar from '../components/NavBars/StaffNavBar';
+import NavigationBar from '../components/NavBars/NavigationBar';
 import ViewPersonalInfo from '../components/PersonalInfo/ViewPersonalInfo';
 import EditPersonalInfo from '../components/PersonalInfo/EditPersonalInfo';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { getUserInfo } from '../utils/authUtils';
+
 
 const PersonalInfo = () => {
 
-  // Simulated user data
+    const [loggedIn, setLoggedIn] = useState(false);
+    const [role, setRole] = useState('');
+    const [userId, setUserId] = useState('');
+
+    const [userData, setUserData] = useState({});
+    const [toggle, setToggle] = useState(false);
+
+    const handleToggle = () => {
+        setToggle(prev => !prev);
+    }
+
+  
+  useEffect(() => {
+
+    const userInfo = getUserInfo();
+
+    if (userInfo.isLoggedIn) {
+      setLoggedIn(true);
+      setRole(userInfo.role);
+      setUserId(userInfo.userId);
+    } else {
+      setLoggedIn(false);
+      setRole('');
+      setUserId('');
+    }
+
+  }, []);
+
+  useEffect(() => {
+  if (loggedIn && role && userId) {
+    userInfoAPI();
+  }
+}, [loggedIn, role, userId, toggle]);
+
+  // Function to fetch user info based on role and userId
+const userInfoAPI = async () => {
   const userInfo = {
-    role: "Manager",
-    managerID: "MGR001",
-    personalID: "P123456",
-    hireDate: "2010-06-01",
-    name: "John",
-    lastName: "Doe",
-    birthday: "1980-04-22",
-    address: "1234 Elm Street, Suburbia, ST 12345",
-    email: "john.doe@example.com",
-    contactNumber: "+1 234-567-8901"
+    role: role,
+    roleId: userId
   };
+
+  try {
+    const response = await axios.post('http://localhost:5067/api/User/staff', userInfo);
+
+    if (response.status === 200 && response.data) {
+      const data = response.data;
+
+      // Get role-specific object (e.g., data.manager)
+      const roleObject = data[role.toLowerCase()] || {};
+
+      // Combine top-level fields
+      const combinedData = {
+        username: data.username,
+        password: data.password,
+        baseSalary: data.baseSalary,
+        overtimeRate: data.overtimeRate,
+        role: role
+      };
+
+      // Add only non-null fields from the role-specific object
+      for (const key in roleObject) {
+        let value = roleObject[key];
+
+        // If value is an ISO date, format to YYYY-MM-DD
+        if (typeof value === 'string' && value.includes('T') && !isNaN(Date.parse(value))) {
+          value = value.split('T')[0]; // keep only the date part
+        }
+
+        if (value !== null && value !== undefined && value !== '') {
+          combinedData[key] = value;
+        }
+      }
+
+      // Explicitly remove unwanted fields
+      delete combinedData.userAuths;
+      delete combinedData.salaryId;
+
+      setUserData(combinedData);
+      console.log('Cleaned User Data:', combinedData);
+    }
+  } catch (error) {
+    console.error('Error fetching user info:', error);
+  }
+};
+
 
   const [editMode, setEditMode] = useState(false);
 
@@ -28,12 +103,12 @@ const PersonalInfo = () => {
   
   return (
     <div>
-      <StaffNavBar />
+      <NavigationBar loggedIn={loggedIn} role={role} />
       <div style={{ height: '50px', visibility: 'hidden' }}>Spacer</div>
       <div className="container-fluid">
         <h2 className='mt-3 mb-0'>Personal Info</h2>
 
-        {editMode ? <EditPersonalInfo userInfo={userInfo} /> : <ViewPersonalInfo userInfo={userInfo} />}
+        {editMode ? <EditPersonalInfo handleToggle={handleToggle} userInfo={userData} /> : <ViewPersonalInfo userInfo={userData} />}
         <button
           className="btn btn-light mt-0" // Using 'btn-light' for a soft appearance on the pink background
           type="button"

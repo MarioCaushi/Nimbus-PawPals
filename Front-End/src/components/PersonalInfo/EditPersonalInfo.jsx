@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-
-const EditPersonalInfo = ({ userInfo }) => {
-
+const EditPersonalInfo = ({ userInfo, handleToggle }) => {
     const [editableUserInfo, setEditableUserInfo] = useState(userInfo || {});
-
-    useEffect(() => {
-        setEditableUserInfo(userInfo);
-    }, [userInfo]);
+    const [message, setMessage] = useState(null);
+    const [messageType, setMessageType] = useState(''); // 'success' or 'error'
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -15,14 +12,85 @@ const EditPersonalInfo = ({ userInfo }) => {
     };
 
     const handleSave = () => {
-        console.log('Saved Info:', editableUserInfo);
-        // Typically here you would send the updated info to the server
+        if (editableUserInfo.password && editableUserInfo.password.length < 8) {
+            setMessage('Password must be at least 8 characters long.');
+            setMessageType('error');
+            clearMessageAfterDelay();
+            return;
+        }
+
+        if (JSON.stringify(editableUserInfo) === JSON.stringify(userInfo)) {
+            setMessage('No changes made.');
+            setMessageType('error');
+            clearMessageAfterDelay();
+            return;
+        }
+
+        editAPI();
     };
 
     const handleDiscard = () => {
         setEditableUserInfo(userInfo);
         console.log('Changes Discarded');
     };
+
+    const editAPI = async () => {
+
+        console.log('Editable User Info:', editableUserInfo);
+
+        const role = userInfo.role?.toLowerCase();
+
+        const roleId =
+            role === 'manager' ? userInfo.managerId :
+                role === 'doctor' ? userInfo.doctorId :
+                    role === 'groomer' ? userInfo.groomerId :
+                        role === 'receptionist' ? userInfo.receptionistId :
+                            null;
+
+
+        const payload = {
+            role: userInfo.role,
+            roleId: roleId,
+            username: editableUserInfo.username,
+            password: editableUserInfo.password,
+            firstName: userInfo.firstName,
+            lastName: userInfo.lastName,
+            email: userInfo.email,
+            contactNumber: editableUserInfo.contactNumber,
+            address: editableUserInfo.address,
+            birthday: editableUserInfo.birthday
+        };
+
+
+        console.log('Payload:', payload);
+
+        try {
+            const response = await axios.put('http://localhost:5067/api/User/staff/personal', payload);
+            if (response.status === 200) {
+                setMessage('User info updated successfully.');
+                setMessageType('success');
+                handleToggle();
+            } else {
+                setMessage('Failed to update user info.');
+                setMessageType('error');
+            }
+        } catch (error) {
+            setMessage('Error updating user info.');
+            setMessageType('error');
+        } finally {
+            clearMessageAfterDelay();
+        }
+    };
+
+    const clearMessageAfterDelay = () => {
+        setTimeout(() => {
+            setMessage(null);
+            setMessageType('');
+        }, 3000);
+    };
+
+    const excludedKeys = [, 'role', 'managerId', 'doctorId', 'groomerId', 'receptionistId', 'firstName', 'lastName', "baseSalary", 'hireDate', 'personalId', 'overtimeRate', 'birthday', 'firstName', 'lastName', 'email',];
+
 
     return (
         <div className="container my-5">
@@ -37,81 +105,49 @@ const EditPersonalInfo = ({ userInfo }) => {
                         Edit - Personal Information
                     </div>
                     <div className="card-body">
+                        {message && (
+                            <div className={`alert alert-${messageType === 'success' ? 'success' : 'danger'}`} role="alert">
+                                {message}
+                            </div>
+                        )}
                         <div className="row">
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="name" className="form-label">Name</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="name"
-                                    name="name"
-                                    value={editableUserInfo.name || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="lastName" className="form-label">Last Name</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="lastName"
-                                    name="lastName"
-                                    value={editableUserInfo.lastName || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="birthday" className="form-label">Birthday</label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    id="birthday"
-                                    name="birthday"
-                                    value={editableUserInfo.birthday || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="address" className="form-label">Address</label>
-                                <input
-                                    type="text"
-                                    className="form-control"
-                                    id="address"
-                                    name="address"
-                                    value={editableUserInfo.address || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="email" className="form-label">Email</label>
-                                <input
-                                    type="email"
-                                    className="form-control"
-                                    id="email"
-                                    name="email"
-                                    value={editableUserInfo.email || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="col-md-6 mb-3">
-                                <label htmlFor="contactNumber" className="form-label">Contact Number</label>
-                                <input
-                                    type="tel"
-                                    className="form-control"
-                                    id="contactNumber"
-                                    name="contactNumber"
-                                    value={editableUserInfo.contactNumber || ''}
-                                    onChange={handleChange}
-                                />
-                            </div>
-                            <div className="card-footer d-flex justify-content-end">
-                                <button type="button" className="btn btn-secondary me-2" onClick={handleDiscard}>Discard</button>
-                                <button type="button" className="btn btn-success" onClick={handleSave}>Save</button>
-                            </div>
+
+                            {Object.entries(editableUserInfo)
+                                .filter(([key]) => !excludedKeys.includes(key))
+                                .map(([key, value]) => {
+                                    const isDate = key.toLowerCase().includes('date') || key.toLowerCase().includes('birthday');
+                                    const inputType = isDate ? 'date' : 'text';
+                                    const formattedValue = isDate && typeof value === 'string' && value.includes('T')
+                                        ? value.split('T')[0]
+                                        : value;
+                                    return (
+                                        <div className="col-md-6 mb-3" key={key}>
+                                            <label htmlFor={key} className="form-label text-capitalize">
+                                                {key.replace(/([A-Z])/g, ' $1').trim()}
+                                            </label>
+                                            <input
+                                                type={key === 'password' ? 'password' : inputType}
+                                                className="form-control"
+                                                id={key}
+                                                name={key}
+                                                value={editableUserInfo[key] || ''}
+                                                placeholder={key === 'password' ? 'Enter new password' : ''}
+                                                onChange={handleChange}
+                                            />
+
+                                        </div>
+                                    );
+
+                                })}
                         </div>
+                    </div>
+                    <div className="card-footer d-flex justify-content-end">
+                        <button type="button" className="btn btn-secondary me-2" onClick={handleDiscard}>Discard</button>
+                        <button type="button" className="btn btn-success" onClick={handleSave}>Save</button>
                     </div>
                 </div>
             </form>
+
         </div>
     );
 };

@@ -50,7 +50,7 @@ app.UseRouting();
 
 // Configure CORS - Simplified without credentials
 app.UseCors(options => options
-    .WithOrigins("http://localhost:5067") // Your frontend URL
+    .AllowAnyOrigin()
     .AllowAnyHeader()
     .AllowAnyMethod());
 

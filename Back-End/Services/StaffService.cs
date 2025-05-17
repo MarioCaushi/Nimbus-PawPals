@@ -242,6 +242,7 @@ public class StaffService : IStaffService
     private async Task<List<DoctorDto>> SearchDoctors(string searchWord, bool isIdSearch, int searchId)
     {
         var query = _context.Doctors.AsQueryable();
+        var normalizedSearch = searchWord.ToLower().Trim();
 
         if (isIdSearch)
         {
@@ -250,8 +251,8 @@ public class StaffService : IStaffService
         else
         {
             query = query.Where(d =>
-                d.FirstName.Contains(searchWord) ||
-                d.LastName.Contains(searchWord));
+                d.FirstName.ToLower().Trim().Contains(normalizedSearch) ||
+                d.LastName.ToLower().Trim().Contains(normalizedSearch));
         }
 
         return await query.Select(d => new DoctorDto
@@ -264,9 +265,11 @@ public class StaffService : IStaffService
         }).ToListAsync();
     }
 
+
     private async Task<List<GroomerDto>> SearchGroomers(string searchWord, bool isIdSearch, int searchId)
     {
         var query = _context.Groomers.AsQueryable();
+        var normalizedSearch = searchWord.ToLower().Trim();
 
         if (isIdSearch)
         {
@@ -275,8 +278,8 @@ public class StaffService : IStaffService
         else
         {
             query = query.Where(g =>
-                g.FirstName.Contains(searchWord) ||
-                g.LastName.Contains(searchWord));
+                g.FirstName.ToLower().Trim().Contains(normalizedSearch) ||
+                g.LastName.ToLower().Trim().Contains(normalizedSearch));
         }
 
         return await query.Select(g => new GroomerDto
@@ -288,9 +291,11 @@ public class StaffService : IStaffService
         }).ToListAsync();
     }
 
+
     private async Task<List<ReceptionistDto>> SearchReceptionists(string searchWord, bool isIdSearch, int searchId)
     {
         var query = _context.Receptionists.AsQueryable();
+        var normalizedSearch = searchWord.ToLower().Trim();
 
         if (isIdSearch)
         {
@@ -299,8 +304,8 @@ public class StaffService : IStaffService
         else
         {
             query = query.Where(r =>
-                r.FirstName.Contains(searchWord) ||
-                r.LastName.Contains(searchWord));
+                r.FirstName.ToLower().Trim().Contains(normalizedSearch) ||
+                r.LastName.ToLower().Trim().Contains(normalizedSearch));
         }
 
         return await query.Select(r => new ReceptionistDto
@@ -312,4 +317,75 @@ public class StaffService : IStaffService
             Qualification = r.Qualification
         }).ToListAsync();
     }
+    
+    public async Task<List<SalaryInfoDto>> GetAllSalaryOptions()
+    {
+        var salaries = await _context.Salaries
+            .Include(s => s.Doctors)
+            .Include(s => s.Groomers)
+            .Include(s => s.Managers)
+            .Include(s => s.Receptionists)
+            .ToListAsync();
+
+        var result = new List<SalaryInfoDto>();
+
+        foreach (var s in salaries)
+        {
+            if (s.Doctors.Any())
+            {
+                foreach (var doc in s.Doctors)
+                {
+                    result.Add(new SalaryInfoDto
+                    {
+                        SalaryId = s.SalaryId,
+                        BaseSalary = s.BaseSalary,
+                        OvertimeRate = s.OvertimeRate,
+                        PayCycle = s.PayCycle,
+                        Role = "Doctor",
+                        Specialty = doc.Specialty
+                    });
+                }
+            }
+
+            if (s.Groomers.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Groomer"
+                });
+            }
+
+            if (s.Receptionists.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Receptionist"
+                });
+            }
+
+            if (s.Managers.Any())
+            {
+                result.Add(new SalaryInfoDto
+                {
+                    SalaryId = s.SalaryId,
+                    BaseSalary = s.BaseSalary,
+                    OvertimeRate = s.OvertimeRate,
+                    PayCycle = s.PayCycle,
+                    Role = "Manager"
+                });
+            }
+        }
+
+        return result;
+    }
+
+
 }

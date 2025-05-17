@@ -2,7 +2,6 @@ using Back_End.Data;
 using Back_End.Dto;
 using Back_End.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using Back_End.Services.ServicesInterface;
 
 namespace Back_End.Services;
@@ -16,85 +15,93 @@ public class UserService : IUserService
         _context = context;
     }
 
-    private async Task<StaffUserDto?> GetManager(int userId)
-    {
-        var manager = await _context.Managers
-            .Include(m => m.UserAuths)
-            .FirstOrDefaultAsync(m => m.ManagerId == userId);
-
-        return manager == null ? null : MapToStaffUserDto(manager);
-    }
-
-    private async Task<StaffUserDto?> GetDoctor(int userId)
-    {
-        var doctor = await _context.Doctors
-            .Include(d => d.UserAuths)
-            .FirstOrDefaultAsync(d => d.DoctorId == userId);
-
-        return doctor == null ? null : MapToStaffUserDto(doctor);
-    }
-
-    private async Task<StaffUserDto?> GetGroomer(int userId)
-    {
-        var groomer = await _context.Groomers
-            .Include(g => g.UserAuths)
-            .FirstOrDefaultAsync(g => g.GroomerId == userId);
-
-        return groomer == null ? null : MapToStaffUserDto(groomer);
-    }
-
-    private async Task<StaffUserDto?> GetReceptionist(int userId)
-    {
-        var receptionist = await _context.Receptionists
-            .Include(r => r.UserAuths)
-            .FirstOrDefaultAsync(r => r.ReceptionistId == userId);
-
-        return receptionist == null ? null : MapToStaffUserDto(receptionist);
-    }
-
-    private StaffUserDto MapToStaffUserDto(dynamic staff)
-    {
-        return new StaffUserDto
-        {
-            PersonalId = staff switch
-            {
-                Manager m => m.ManagerId,
-                Doctor d => d.DoctorId,
-                Groomer g => g.GroomerId,
-                Receptionist r => r.ReceptionistId,
-                _ => 0
-            },
-            Username = staff.UserAuths?.FirstOrDefault()?.Username,
-            Password = staff.UserAuths?.FirstOrDefault()?.Password,
-            FirstName = staff.FirstName,
-            LastName = staff.LastName,
-            Email = staff.Email,
-            ContactNumber = staff.ContactNumber,
-            Address = staff.Address,
-            Birthday = staff.Birthday,
-            HireDate = staff.HireDate,
-            BaseSalary = staff.BaseSalary,
-            PayCycle = staff.PayCycle,
-            Specialty = staff.Specialty,
-            Qualifications = staff.Qualifications
-        };
-    }
-
     public async Task<StaffUserDto?> GetStaffUser(int userId, string role)
     {
         if (string.IsNullOrEmpty(role)) return null;
 
-        // Case-insensitive role handling
+        var auth = await _context.UserAuths.AsNoTracking().FirstOrDefaultAsync(u => u.Role.ToLower() == role.ToLower() &&
+            (u.ManagerId == userId || u.DoctorId == userId || u.GroomerId == userId || u.ReceptionistId == userId));
+
+        if (auth == null) return null;
+
         return role.ToLower() switch
         {
-            "manager" => await GetManager(userId),
-            "doctor" => await GetDoctor(userId),
-            "groomer" => await GetGroomer(userId),
-            "receptionist" => await GetReceptionist(userId),
+            "manager" => await MapManager(auth),
+            "doctor" => await MapDoctor(auth),
+            "groomer" => await MapGroomer(auth),
+            "receptionist" => await MapReceptionist(auth),
             _ => null
         };
     }
 
+    private async Task<StaffUserDto?> MapManager(UserAuth auth)
+    {
+        var manager = await _context.Managers.AsNoTracking().FirstOrDefaultAsync(m => m.ManagerId == auth.ManagerId);
+        if (manager == null) return null;
+
+        var salary = await _context.Salaries.AsNoTracking().FirstOrDefaultAsync(s => s.SalaryId == manager.SalaryId);
+
+        return new StaffUserDto
+        {
+            Username = auth.Username,
+            Password = auth.Password,
+            BaseSalary = salary?.BaseSalary ?? 0,
+            OvertimeRate = salary?.OvertimeRate,
+            Manager = manager
+        };
+    }
+
+    private async Task<StaffUserDto?> MapDoctor(UserAuth auth)
+    {
+        var doctor = await _context.Doctors.AsNoTracking().FirstOrDefaultAsync(d => d.DoctorId == auth.DoctorId);
+        if (doctor == null) return null;
+
+        var salary = await _context.Salaries.AsNoTracking().FirstOrDefaultAsync(s => s.SalaryId == doctor.SalaryId);
+
+        return new StaffUserDto
+        {
+            Username = auth.Username,
+            Password = auth.Password,
+            BaseSalary = salary?.BaseSalary ?? 0,
+            OvertimeRate = salary?.OvertimeRate,
+            Doctor = doctor
+        };
+    }
+
+    private async Task<StaffUserDto?> MapGroomer(UserAuth auth)
+    {
+        var groomer = await _context.Groomers.AsNoTracking().FirstOrDefaultAsync(g => g.GroomerId == auth.GroomerId);
+        if (groomer == null) return null;
+
+        var salary = await _context.Salaries.AsNoTracking().FirstOrDefaultAsync(s => s.SalaryId == groomer.SalaryId);
+
+        return new StaffUserDto
+        {
+            Username = auth.Username,
+            Password = auth.Password,
+            BaseSalary = salary?.BaseSalary ?? 0,
+            OvertimeRate = salary?.OvertimeRate,
+            Groomer = groomer
+        };
+    }
+
+    private async Task<StaffUserDto?> MapReceptionist(UserAuth auth)
+    {
+        var receptionist = await _context.Receptionists.AsNoTracking().FirstOrDefaultAsync(r => r.ReceptionistId == auth.ReceptionistId);
+        if (receptionist == null) return null;
+
+        var salary = await _context.Salaries.AsNoTracking().FirstOrDefaultAsync(s => s.SalaryId == receptionist.SalaryId);
+
+        return new StaffUserDto
+        {
+            Username = auth.Username,
+            Password = auth.Password,
+            BaseSalary = salary?.BaseSalary ?? 0,
+            OvertimeRate = salary?.OvertimeRate,
+            Receptionist = receptionist
+        };
+    }
+    
     public async Task<bool> UpdateStaffPersonalInfo(StaffUpdateDto updateDto, int userId, string role)
     {
         try
@@ -113,83 +120,87 @@ public class UserService : IUserService
             return false;
         }
     }
+    
+    
 
-    private async Task<bool> UpdateManager(int userId, StaffUpdateDto updateDto)
+private async Task<bool> UpdateManager(int userId, StaffUpdateDto updateDto)
+{
+    var manager = await _context.Managers
+        .Include(m => m.UserAuths)
+        .FirstOrDefaultAsync(m => m.ManagerId == userId);
+
+    if (manager == null) return false;
+
+    UpdateStaffCommonProperties(manager, updateDto);
+    await UpdateUserAuth(manager.UserAuths.FirstOrDefault(), updateDto);
+    await _context.SaveChangesAsync();
+    return true;
+}
+
+private async Task<bool> UpdateDoctor(int userId, StaffUpdateDto updateDto)
+{
+    var doctor = await _context.Doctors
+        .Include(d => d.UserAuths)
+        .FirstOrDefaultAsync(d => d.DoctorId == userId);
+
+    if (doctor == null) return false;
+
+    UpdateStaffCommonProperties(doctor, updateDto);
+    
+    await UpdateUserAuth(doctor.UserAuths.FirstOrDefault(), updateDto);
+    await _context.SaveChangesAsync();
+    return true;
+}
+
+private async Task<bool> UpdateGroomer(int userId, StaffUpdateDto updateDto)
+{
+    var groomer = await _context.Groomers
+        .Include(g => g.UserAuths)
+        .FirstOrDefaultAsync(g => g.GroomerId == userId);
+
+    if (groomer == null) return false;
+
+    UpdateStaffCommonProperties(groomer, updateDto);
+    await UpdateUserAuth(groomer.UserAuths.FirstOrDefault(), updateDto);
+    await _context.SaveChangesAsync();
+    return true;
+}
+
+private async Task<bool> UpdateReceptionist(int userId, StaffUpdateDto updateDto)
+{
+    var receptionist = await _context.Receptionists
+        .Include(r => r.UserAuths)
+        .FirstOrDefaultAsync(r => r.ReceptionistId == userId);
+
+    if (receptionist == null) return false;
+
+    UpdateStaffCommonProperties(receptionist, updateDto);
+    await UpdateUserAuth(receptionist.UserAuths.FirstOrDefault(), updateDto);
+    await _context.SaveChangesAsync();
+    return true;
+}
+
+private void UpdateStaffCommonProperties(dynamic staff, StaffUpdateDto updateDto)
+{
+    staff.FirstName = updateDto.FirstName;
+    staff.LastName = updateDto.LastName;
+    staff.Birthday = updateDto.Birthday;
+    staff.Address = updateDto.Address;
+    staff.Email = updateDto.Email;
+    staff.ContactNumber = updateDto.ContactNumber;
+}
+
+private async Task UpdateUserAuth(UserAuth? userAuth, StaffUpdateDto updateDto)
+{
+    if (userAuth != null)
     {
-        var manager = await _context.Managers
-            .Include(m => m.UserAuths)
-            .FirstOrDefaultAsync(m => m.ManagerId == userId);
-
-        if (manager == null) return false;
-
-        UpdateStaffCommonProperties(manager, updateDto);
-        await UpdateUserAuth(manager.UserAuths.FirstOrDefault(), updateDto);
+        userAuth.Username = updateDto.Username;
+        // In production, you should hash the password before saving
+        userAuth.Password = updateDto.Password;
+        _context.UserAuths.Update(userAuth);
         await _context.SaveChangesAsync();
-        return true;
     }
-
-    private async Task<bool> UpdateDoctor(int userId, StaffUpdateDto updateDto)
-    {
-        var doctor = await _context.Doctors
-            .Include(d => d.UserAuths)
-            .FirstOrDefaultAsync(d => d.DoctorId == userId);
-
-        if (doctor == null) return false;
-
-        UpdateStaffCommonProperties(doctor, updateDto);
-        await UpdateUserAuth(doctor.UserAuths.FirstOrDefault(), updateDto);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    private async Task<bool> UpdateGroomer(int userId, StaffUpdateDto updateDto)
-    {
-        var groomer = await _context.Groomers
-            .Include(g => g.UserAuths)
-            .FirstOrDefaultAsync(g => g.GroomerId == userId);
-
-        if (groomer == null) return false;
-
-        UpdateStaffCommonProperties(groomer, updateDto);
-        await UpdateUserAuth(groomer.UserAuths.FirstOrDefault(), updateDto);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    private async Task<bool> UpdateReceptionist(int userId, StaffUpdateDto updateDto)
-    {
-        var receptionist = await _context.Receptionists
-            .Include(r => r.UserAuths)
-            .FirstOrDefaultAsync(r => r.ReceptionistId == userId);
-
-        if (receptionist == null) return false;
-
-        UpdateStaffCommonProperties(receptionist, updateDto);
-        await UpdateUserAuth(receptionist.UserAuths.FirstOrDefault(), updateDto);
-        await _context.SaveChangesAsync();
-        return true;
-    }
-
-    private void UpdateStaffCommonProperties(dynamic staff, StaffUpdateDto updateDto)
-    {
-        staff.FirstName = updateDto.FirstName;
-        staff.LastName = updateDto.LastName;
-        staff.Birthday = updateDto.Birthday;
-        staff.Address = updateDto.Address;
-        staff.Email = updateDto.Email;
-        staff.ContactNumber = updateDto.ContactNumber;
-    }
-
-    private async Task UpdateUserAuth(UserAuth? userAuth, StaffUpdateDto updateDto)
-    {
-        if (userAuth != null)
-        {
-            userAuth.Username = updateDto.Username;
-            userAuth.Password = updateDto.Password; // Consider adding password hashing here
-            await _context.SaveChangesAsync();
-        }
-    }
-
+}
     public async Task<bool> DeleteUser(UserDeleteDto deleteDto)
     {
         try
@@ -278,4 +289,5 @@ public class UserService : IUserService
         await _context.SaveChangesAsync();
         return true;
     }
+    
 }

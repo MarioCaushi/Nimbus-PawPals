@@ -22,12 +22,13 @@ public class StaffController : ControllerBase
         var staff = await _staffService.GetAllStaff();
         return Ok(staff);
     }
-    [HttpGet("search")]
-    public async Task<IActionResult> SearchStaff([FromQuery] StaffSearchDto searchDto)
+    [HttpPost("search")]
+    public async Task<IActionResult> SearchStaff([FromBody] StaffSearchDto searchDto)
     {
         var staff = await _staffService.SearchStaff(searchDto);
         return Ok(staff);
     }
+
     [HttpPost]
     public async Task<IActionResult> AddStaff([FromBody] AddStaffDto staffDto)
     {
@@ -38,4 +39,14 @@ public class StaffController : ControllerBase
             
         return BadRequest(error);
     }
+
+    
+    [HttpGet("salaries")]
+    public async Task<IActionResult> GetAllSalaries()
+    {
+        var salaries = await _staffService.GetAllSalaryOptions();
+        return Ok(salaries);
+    }
+
+
 }
