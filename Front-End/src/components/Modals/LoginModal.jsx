@@ -50,6 +50,9 @@ const LoginModal = ({ show, handleClose }) => {
             });
             if (response.status === 200) {
 
+                console.log("Login successful");
+                console.log("Response data:", response.data);
+
                 console.log(response.data);
                 setUserInfo(response.data.roleId, response.data.role);
                 setError(false);
