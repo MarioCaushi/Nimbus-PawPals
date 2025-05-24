@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import RegisterModal from '../Modals/RegisterModal';
+import ClientDetailsStaff from '../Modals/ClientStaff/ClientDetailsStaff';
+import ClientEditStaff from '../Modals/ClientStaff/ClientEditStaff';
+import ClientBillsStaff from '../Modals/ClientStaff/ClientBillsStaff';
 
 function ViewClients( {loggedIn, roleLoggedIn}) {
   const [search, setSearch] = useState('');
@@ -61,6 +64,38 @@ function ViewClients( {loggedIn, roleLoggedIn}) {
     setFilteredClients(filtered);
   };
 
+
+  const [selectedClientId, setSelectedClientId] = useState(null);
+  const [showClientDetails, setShowClientDetails] = useState(false);
+
+  const [showEditClientModal, setShowEditClientModal] = useState(false);
+  const [selectedClientEdit, setSelectedClientEdit] = useState(null);
+
+  const handleOpenEditClient = (client) => {
+    setSelectedClientEdit(client);
+    setShowClientDetails(false);
+    setShowEditClientModal(true);
+  };
+
+  const handleCloseEditClient = () => {
+    setShowClientDetails(true);
+    setShowEditClientModal(false);
+
+  };
+
+  const [showBillsModal, setShowBillsModal] = useState(false);
+  const handleOpenBillsModal = (clientId) => {
+    setSelectedClientId(clientId);
+    setShowBillsModal(true);
+    setShowClientDetails(false);
+  };
+  const handleCloseBillsModal = () => {
+    setShowBillsModal(false);
+    setShowClientDetails(true);
+  };
+
+
+
   return (
     <div className="container my-5">
       <div className="d-flex flex-wrap align-items-center justify-content-center gap-3 mb-5">
@@ -97,7 +132,16 @@ function ViewClients( {loggedIn, roleLoggedIn}) {
                 <h6 className="card-title fw-bold mb-2" style={{ fontSize: '1.1rem', color: '#333' }}>{client.firstName} {client.lastName}</h6>
                 <p className="mb-1 text-muted" style={{ fontSize: '0.85rem' }}>ID: {client.clientId}</p>
                 <p className="mb-3" style={{ fontSize: '0.85rem', color: '#555' }}>{client.email}</p>
-                <button className="btn btn-outline-primary btn-sm rounded-pill px-3">View Details</button>
+                <button
+                  className="btn btn-outline-primary btn-sm rounded-pill px-3"
+                  onClick={() => {
+                    setSelectedClientId(client.clientId);
+                    setShowClientDetails(true);
+                  }}
+                >
+                  View Details
+                </button>
+
               </div>
             </div>
           ))}
@@ -111,6 +155,31 @@ function ViewClients( {loggedIn, roleLoggedIn}) {
                 loggedIn={loggedIn}
                 handleTrigger={handleTrigger}
             /> )}
+
+      {showClientDetails && (
+        <ClientDetailsStaff
+          clientId={selectedClientId}
+          handleClose={() => setShowClientDetails(false)}
+          handleTrigger={handleTrigger}
+          handleOpenEditClient={handleOpenEditClient}
+          handleOpenBillsModal={handleOpenBillsModal}
+        />
+      )}
+
+      {showEditClientModal && (
+        <ClientEditStaff
+          editClient={selectedClientEdit}
+          handleClose={handleCloseEditClient}
+          handleTrigger={handleTrigger}
+        />
+      )}
+
+      {showBillsModal && (
+        <ClientBillsStaff
+          clientId={selectedClientId}
+          handleClose={handleCloseBillsModal}
+        />
+      )}
 
     </div>
 
