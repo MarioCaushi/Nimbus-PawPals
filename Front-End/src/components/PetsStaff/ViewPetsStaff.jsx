@@ -12,6 +12,12 @@ function ViewPetsStaff({ roleLoggedIn }) {
     const [tempPets, setTempPets] = useState([]);
     const [search, setSearch] = useState('');
 
+    const [toggleAPI, setToggleAPI] = useState(false);
+
+    const toggleAPIHandler = () => {
+        setToggleAPI(!toggleAPI);
+    };
+
     const handleSearch = () => {
         const filtered = tempPets.filter(p =>
             p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -50,7 +56,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
     useEffect(() => {
 
         getPetsAPI();
-    }, []);
+    }, [toggleAPI]);
 
     // To deal with show pet info modal
 
@@ -191,6 +197,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
                     pet={selectedPet}
                     roleLoggedIn={roleLoggedIn}
                     handleEditClick={handleEditModalShow} // pass this
+                    toggleAPIHandler={toggleAPIHandler}
                 />
             )}
 
@@ -199,6 +206,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
                     show={showEditModal}
                     handleClose={handleEditModalClose}
                     pet={selectedPet}
+                    toggleAPIHandler={toggleAPIHandler}
                 />
             )}
 
@@ -206,6 +214,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
                 <AddPetModal
                     show={showAddModal}
                     handleClose={handleAddModalClose}
+                    toggleAPIHandler={toggleAPIHandler}
                 />
             )}
 
