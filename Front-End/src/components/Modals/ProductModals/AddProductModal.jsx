@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
 function AddProductModal({ show, handleToggle, onClose, categories = [], animalTypes = [] }) {
   const [isCategoryOther, setIsCategoryOther] = useState(false);
@@ -43,7 +44,7 @@ function AddProductModal({ show, handleToggle, onClose, categories = [], animalT
     setIsAnimalTypeOther(false);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
 
     console.log('Form data:', formData);
     // Basic validation
@@ -57,19 +58,30 @@ function AddProductModal({ show, handleToggle, onClose, categories = [], animalT
       setErrorMessage('Please fill in all required fields.');
       setSuccessMessage('');
 
-    setTimeout(() => {
-      setErrorMessage('');
-    }, 3000);
+      setTimeout(() => {
+        setErrorMessage('');
+      }, 3000);
 
       return;
     }
 
-    setErrorMessage('');
-    setSuccessMessage('Product saved successfully!');
-    handleDiscard();
-    handleToggle();
+    try {
 
-    // Simulate saving delay and clear message after 3 seconds
+      const response = await axios.post('http://localhost:5067/api/Product/addProduct', formData);
+
+      if (response.status == 200) {
+        setErrorMessage('');
+        setSuccessMessage('Product saved successfully!');
+        handleDiscard();
+        handleToggle();
+      }
+
+    } catch (error) {
+      console.error('Error saving product:', error);
+      setErrorMessage('Failed to save product. Please try again.');
+      setSuccessMessage('');
+    }
+
     setTimeout(() => {
       setSuccessMessage('');
     }, 3000);

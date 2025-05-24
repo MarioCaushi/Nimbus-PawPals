@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 function EditProductModal({ show, onClose, handleToggle,  product, categories = [], animalTypes = [] }) {
   const [formData, setFormData] = useState({
+    productId: product ? product.productId : '',
     name: '',
     category: '',
     price: '',
@@ -17,7 +19,9 @@ function EditProductModal({ show, onClose, handleToggle,  product, categories = 
 
   useEffect(() => {
     if (product) {
+      console.log('Editing product:', product);
       setFormData({
+        productId: product.productId || '',
         name: product.name || '',
         category: product.category || '',
         price: product.price || '',
@@ -45,7 +49,7 @@ function EditProductModal({ show, onClose, handleToggle,  product, categories = 
     }
   };
 
-  const handleDiscard = () => {
+  const handleDiscard =  () => {
     if (!product) return;
 
     setFormData({
@@ -63,7 +67,7 @@ function EditProductModal({ show, onClose, handleToggle,  product, categories = 
     setIsAnimalTypeOther(!animalTypes.includes(product.animalType));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim() || !formData.category.trim() || !formData.animalType.trim() || !formData.price) {
       setErrorMessage('Please fill in all required fields.');
       setSuccessMessage('');
@@ -71,10 +75,26 @@ function EditProductModal({ show, onClose, handleToggle,  product, categories = 
       return;
     }
 
-    // Simulate successful update
-    console.log('Updating product:', formData);
-    setErrorMessage('');
-    setSuccessMessage('Product updated successfully!');
+    try
+    {
+
+       const response = await axios.put(`http://localhost:5067/api/Product/editProduct`, formData);
+
+       if (response.status == 200) {
+        console.log('Product updated successfully:', response.data);
+        setErrorMessage('');
+        setSuccessMessage('Product updated successfully!');
+        handleDiscard();
+       }
+
+    }
+    catch (error) {
+      console.error('Error updating product:', error);
+      setErrorMessage('Failed to update product. Please try again.');
+      setSuccessMessage('');
+      setTimeout(() => setErrorMessage(''), 3000);
+      return;
+    }
 
     setTimeout(() => {
       setSuccessMessage('');
