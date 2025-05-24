@@ -8,6 +8,7 @@ import StaffPage from './pages/StaffPage';
 import ClientsStaff from './pages/ClientsStaff';
 import PetStaff from './pages/PetStaff';
 import TimetableStaff from './pages/TimetableStaff';
+import InsightsStaff from './pages/InsightsStaff';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
         <Route path="/Clients-Staff" element={< ClientsStaff />} />
         <Route path="/Pets-Staff" element={< PetStaff />} />
         <Route path="/Timetable-Staff" element={< TimetableStaff />} />
+        <Route path="/Insights-Staff" element={< InsightsStaff />} />
         <Route path="*" element={<PageError />} />
       </Routes>
     </>

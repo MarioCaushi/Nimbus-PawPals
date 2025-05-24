@@ -56,7 +56,7 @@ function StaffNavBar({ role }) {
               {/* Insights - Only for Manager */}
               {normalizedRole === 'manager' && (
                 <li className="nav-item">
-                  <Link className="nav-link text-dark">Insights</Link>
+                  <Link className="nav-link text-dark" to="/Insights-Staff">Insights</Link>
                 </li>
               )}
             </ul>
