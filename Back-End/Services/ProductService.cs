@@ -120,7 +120,7 @@ public class ProductService : IProductService
             AnimalTypes = animalTypes
         };
     }
-    // In your ProductService implementation
+    // ProductService implementation
     public async Task<bool> AddProduct(ProductDto productDto)
     {
         try

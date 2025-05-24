@@ -67,7 +67,7 @@ public class StaffService : IStaffService
                     await _context.SaveChangesAsync();
 
                     // Create user auth
-                    await CreateUserAuth(doctor.DoctorId, staffDto, "doctor");
+                    await CreateUserAuth(doctor.DoctorId, staffDto, "Doctor");
                     break;
 
                 case "receptionist":
@@ -87,7 +87,7 @@ public class StaffService : IStaffService
                     _context.Receptionists.Add(receptionist);
                     await _context.SaveChangesAsync();
 
-                    await CreateUserAuth(receptionist.ReceptionistId, staffDto, "receptionist");
+                    await CreateUserAuth(receptionist.ReceptionistId, staffDto, "Receptionist");
                     break;
 
                 case "groomer":
@@ -106,7 +106,7 @@ public class StaffService : IStaffService
                     _context.Groomers.Add(groomer);
                     await _context.SaveChangesAsync();
 
-                    await CreateUserAuth(groomer.GroomerId, staffDto, "groomer");
+                    await CreateUserAuth(groomer.GroomerId, staffDto, "Groomer");
                     break;
 
                 case "manager":
@@ -125,7 +125,7 @@ public class StaffService : IStaffService
                     _context.Managers.Add(manager);
                     await _context.SaveChangesAsync();
 
-                    await CreateUserAuth(manager.ManagerId, staffDto, "manager");
+                    await CreateUserAuth(manager.ManagerId, staffDto, "Manager");
                     break;
 
                 default:

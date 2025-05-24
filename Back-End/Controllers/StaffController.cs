@@ -29,12 +29,12 @@ public class StaffController : ControllerBase
         return Ok(staff);
     }
 
-    [HttpPost]
+    [HttpPost("addStaff")]
     public async Task<IActionResult> AddStaff([FromBody] AddStaffDto staffDto)
     {
         var error = await _staffService.AddStaff(staffDto);
             
-        if (error == null)
+        if (error == null || String.IsNullOrEmpty(error))
             return Ok();
             
         return BadRequest(error);

@@ -58,7 +58,7 @@ public class PetController : ControllerBase
         return Ok(pets);
     }
 
-    [HttpPut("{petId}")]
+    [HttpPut("editPet/{petId}")]
     public async Task<IActionResult> UpdatePetInfo(int petId, [FromBody] UpdatePetInfoDto updatedInfo)
     {
         var success = await _petService.UpdatePetInfo(petId, updatedInfo);
@@ -67,7 +67,7 @@ public class PetController : ControllerBase
 
         return Ok(true);
     }
-    [HttpPost]
+    [HttpPost("addPet")]
     public async Task<IActionResult> AddPet([FromBody] AddPetDto petDto)
     {
         var success = await _petService.AddPet(petDto);
