@@ -1,6 +1,14 @@
 const CART_KEY = 'cartItems';
 
 // Get cart items (returns dictionary with Services and Products)
+
+// Get total count of items in cart (services + products*quantity)
+export const getCartItemCount = () => {
+  const cart = getCartItems();
+  const serviceCount = cart.Services.length;
+  const productCount = cart.Products.reduce((total, p) => total + (p.quantity || 1), 0);
+  return serviceCount + productCount;
+};
 export const getCartItems = () => {
   const cart = localStorage.getItem(CART_KEY);
   return cart ? JSON.parse(cart) : { Services: [], Products: [] };
@@ -15,6 +23,7 @@ export const addItemToCart = (item, type) => {
     cart.Products.push(item);
   }
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  window.dispatchEvent(new Event('cartUpdated'));
 };
 
 // Remove item by id from both categories

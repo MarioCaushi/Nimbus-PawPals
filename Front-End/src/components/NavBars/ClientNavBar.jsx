@@ -1,10 +1,23 @@
-import React from 'react';
+import { getCartItemCount } from '../../utils/cartUtils';
 import { Link, useNavigate } from 'react-router-dom';
-import { clearUserInfo } from '../../utils/authUtils';
 import { FaShoppingCart } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
 
 function ClientNavBar({ role }) {
   const navigate = useNavigate();
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
+    const updateCount = () => setCartCount(getCartItemCount());
+    updateCount(); // Load on mount
+
+    // Listen for cart updates
+    window.addEventListener('cartUpdated', updateCount);
+
+    return () => {
+      window.removeEventListener('cartUpdated', updateCount);
+    };
+  }, []);
 
   const handleLogOut = () => {
     if (confirm("Are you sure you want to log out?")) {
@@ -12,6 +25,7 @@ function ClientNavBar({ role }) {
       navigate("/", { replace: true });
     }
   };
+
 
   return (
     <nav className="navbar navbar-expand-lg navbar-light bg-white px-4 py-3 rounded-4 border border-2 border-black shadow-sm fixed-top m-3">
@@ -58,9 +72,10 @@ function ClientNavBar({ role }) {
             <Link to="" className="position-relative">
               <FaShoppingCart size={20} className="text-dark" />
               {/* Badge placeholder - set item count here */}
-              <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                0
-              </span>
+<span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+  {cartCount}
+</span>
+
             </Link>
 
             {/* Profile Button */}
