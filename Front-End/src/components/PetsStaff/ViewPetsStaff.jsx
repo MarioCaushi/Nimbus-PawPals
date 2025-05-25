@@ -6,7 +6,7 @@ import EditPetDetailsModal from '../Modals/PetStaffModals/EditPetDetailsModal';
 import AddPetModal from '../Modals/PetStaffModals/AddPetModal';
 
 
-function ViewPetsStaff({ roleLoggedIn }) {
+function ViewPetsStaff({ roleLoggedIn, userId }) {
 
     const [pets, setPets] = useState([]);
     const [tempPets, setTempPets] = useState([]);
@@ -33,25 +33,32 @@ function ViewPetsStaff({ roleLoggedIn }) {
     };
 
 
-
-    // To deal with get Pets API
     const getPetsAPI = async () => {
 
+        console.log('Fetching pets for role:', roleLoggedIn);
+        console.log('User ID:', userId);
         try {
-            const response = await axios.get('http://localhost:5067/api/Pet');
+            const apiUrl = roleLoggedIn?.toLowerCase() === 'client'
+                ? `http://localhost:5067/api/Pet/by-client/${userId}`
+                : 'http://localhost:5067/api/Pet';
+
+            const response = await axios.get(apiUrl);
 
             if (response.status === 200) {
-                const data = response.data;
-                setPets(data);
-                setTempPets(data);
-            }
-            else {
+                let data = response.data;
+                console.log('Original pet data:', data);
+                setPets(Array.isArray(data) ? data : []);
+                setTempPets(Array.isArray(data) ? data : []);
+            } else {
                 console.error('Error fetching pets:', response.statusText);
             }
         } catch (error) {
             console.error('Error fetching pets:', error);
+            setPets([]);
+            setTempPets([]);
         }
     };
+
 
     useEffect(() => {
 
@@ -83,7 +90,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
         setShowEditModal(false);
         setShowViewModal(true);
     };
-    
+
     // To deal with add pet modal
     const [showAddModal, setShowAddModal] = useState(false);
     const handleAddModalShow = () => {
@@ -154,39 +161,43 @@ function ViewPetsStaff({ roleLoggedIn }) {
             {/* Scrollable Card Container */}
             <div className="container-fluid px-4 mb-5" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
                 <div className="d-flex flex-wrap justify-content-center gap-4">
-                    {tempPets.map((pet) => (
-                        <div
-                            key={pet.petId}
-                            className="card"
-                            style={{
-                                width: '15rem',
-                                borderRadius: '20px',
-                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.06)',
-                                backgroundColor: '#fcfcff',
-                                padding: '1rem',
-                                transition: 'transform 0.2s ease',
-                                border: '1px solid #eaeaea'
-                            }}
-                            onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
-                        >
-                            <div className="card-body text-center p-2">
-                                <h6 className="fw-bold mb-2" style={{ fontSize: '1rem', color: '#333' }}>
-                                    {pet.name}
-                                </h6>
-                                <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>ID: {pet.petId}</p>
-                                <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>Species: {pet.species}</p>
-                                <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>Breed: {pet.breed}</p>
-                                <p className="mb-3" style={{ fontSize: '0.85rem', color: '#888' }}>Client: {pet.clientName}</p>
-                                <button
-                                    className="btn btn-outline-primary btn-sm rounded-pill px-3"
-                                    onClick={() => handleViewModalShow(pet)}
-                                >
-                                    View Details
-                                </button>
+                    {tempPets.length === 0 ? (
+                        <p className="text-muted text-center w-100 mt-4">No pets found.</p>
+                    ) : (
+                        tempPets.map((pet) => (
+
+                            <div
+                                key={pet.petId}
+                                className="card"
+                                style={{
+                                    width: '15rem',
+                                    borderRadius: '20px',
+                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.06)',
+                                    backgroundColor: '#fcfcff',
+                                    padding: '1rem',
+                                    transition: 'transform 0.2s ease',
+                                    border: '1px solid #eaeaea'
+                                }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = 'scale(1.02)')}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+                            >
+                                <div className="card-body text-center p-2">
+                                    <h6 className="fw-bold mb-2" style={{ fontSize: '1rem', color: '#333' }}>
+                                        {pet.name}
+                                    </h6>
+                                    <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>ID: {pet.petId}</p>
+                                    <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>Species: {pet.species}</p>
+                                    <p className="mb-1" style={{ fontSize: '0.85rem', color: '#666' }}>Breed: {pet.breed}</p>
+                                    <p className="mb-3" style={{ fontSize: '0.85rem', color: '#888' }}>Client: {pet.clientName}</p>
+                                    <button
+                                        className="btn btn-outline-primary btn-sm rounded-pill px-3"
+                                        onClick={() => handleViewModalShow(pet)}
+                                    >
+                                        View Details
+                                    </button>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        )))}
                 </div>
             </div>
 
@@ -198,6 +209,7 @@ function ViewPetsStaff({ roleLoggedIn }) {
                     roleLoggedIn={roleLoggedIn}
                     handleEditClick={handleEditModalShow} // pass this
                     toggleAPIHandler={toggleAPIHandler}
+                    userId={userId}
                 />
             )}
 

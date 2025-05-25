@@ -42,7 +42,7 @@ function ClientNavBar({ role }) {
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
             <li className="nav-item">
-              <Link className="nav-link fw-semibold">My Pets</Link>
+              <Link className="nav-link fw-semibold" to="/Pets">My Pets</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link fw-semibold">Inventory</Link>

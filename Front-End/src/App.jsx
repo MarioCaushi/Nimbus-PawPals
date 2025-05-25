@@ -11,6 +11,7 @@ import TimetableStaff from './pages/TimetableStaff';
 import InsightsStaff from './pages/InsightsStaff';
 import Client_PersonalInfo from './pages/ClientSide-Pages/Client_PersonalInfo';
 
+
 const App = () => {
   return (
     <>
@@ -20,7 +21,7 @@ const App = () => {
         <Route path="/Personal-Info" element={< PersonalInfoPage />} />
         <Route path="/Staff" element={< StaffPage />} />
         <Route path="/Clients-Staff" element={< ClientsStaff />} />
-        <Route path="/Pets-Staff" element={< PetStaff />} />
+        <Route path="/Pets" element={< PetStaff />} />
         <Route path="/Timetable-Staff" element={< TimetableStaff />} />
         <Route path="/Insights-Staff" element={< InsightsStaff />} />
         <Route path="/Client-Personal-Info" element={< Client_PersonalInfo />} />

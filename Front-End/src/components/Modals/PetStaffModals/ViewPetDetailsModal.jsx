@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLoggedIn, toggleAPIHandler }) {
+function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLoggedIn, toggleAPIHandler, userId }) {
   const [activeTab, setActiveTab] = useState('info');
 
   if (!show || !pet) return null;
@@ -173,12 +173,14 @@ const handleAddMedicalRecord = async () => {
         return (
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <div className="text-end mb-2">
-              <button
-                className="btn btn-sm btn-outline-success"
-                onClick={() => setShowAddMedicalModal(true)}
-              >
-                ➕ Add Record
-              </button>
+{roleLoggedIn?.toLowerCase() !== 'client' && (
+  <button
+    className="btn btn-sm btn-outline-success"
+    onClick={() => setShowAddMedicalModal(true)}
+  >
+    ➕ Add Record
+  </button>
+)}
             </div>
             {medicalError ? (
               <div className="text-muted text-center">{medicalError}</div>

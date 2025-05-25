@@ -31,7 +31,7 @@ function StaffNavBar({ role }) {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link className="nav-link text-dark" to="/Pets-Staff">Pets</Link>
+                <Link className="nav-link text-dark" to="/Pets">Pets</Link>
               </li>
 
               {/* Clients and Staff - Manager or Receptionist */}
