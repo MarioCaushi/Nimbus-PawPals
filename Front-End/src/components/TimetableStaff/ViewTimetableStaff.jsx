@@ -18,6 +18,8 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
     const [weekOffset, setWeekOffset] = useState(0);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [filter, setFilter] = useState('all');
+    const [petFilter, setPetFilter] = useState('all');
+    const [clientPets, setClientPets] = useState([]);
 
     const [trigger, setTrigger] = useState(false);
     const toggleTrigger = () => {
@@ -26,9 +28,25 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
 
     useEffect(() => {
         const fetchAppointments = async () => {
+            setLoading(true);
             try {
+                let pets = [];
+                if (roleLoggedIn === 'Client') {
+                    const clientResponse = await axios.get(`http://localhost:5067/api/Client/${userId}`);
+                    pets = clientResponse.data.pets || [];
+                    setClientPets(pets);
+                }
+
                 const response = await axios.get("http://localhost:5067/api/Timetable");
-                setAppointments(response.data);
+                const allAppointments = response.data;
+
+                if (roleLoggedIn === 'Client') {
+                    const petIds = pets.map(p => p.petId);
+                    const filtered = allAppointments.filter(appt => petIds.includes(appt.petId));
+                    setAppointments(filtered);
+                } else {
+                    setAppointments(allAppointments);
+                }
             } catch (error) {
                 console.error("Error fetching timetable:", error);
             } finally {
@@ -90,23 +108,23 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
 
         <div className="container my-5">
             {(roleLoggedIn === 'Manager' || roleLoggedIn === 'Receptionist' || roleLoggedIn === "Client") && (
-            <div className="d-flex justify-content-center mb-5">
-                <button
-                    className="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm"
-                    style={{
-                        fontSize: '1rem',
-                        letterSpacing: '0.5px',
-                        backgroundImage: 'linear-gradient(to right, #00b4db, #0083b0)',
-                        border: 'none',
-                        transition: 'all 0.3s ease-in-out'
-                    }}
-                    onClick={() => toggleModal()}
-                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
-                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                >
-                    ➕ Add Appointment
-                </button>
-            </div>
+                <div className="d-flex justify-content-center mb-5">
+                    <button
+                        className="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm"
+                        style={{
+                            fontSize: '1rem',
+                            letterSpacing: '0.5px',
+                            backgroundImage: 'linear-gradient(to right, #00b4db, #0083b0)',
+                            border: 'none',
+                            transition: 'all 0.3s ease-in-out'
+                        }}
+                        onClick={() => toggleModal()}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                    >
+                        ➕ Add Appointment
+                    </button>
+                </div>
             )}
 
 
@@ -117,6 +135,14 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <h3>Weekly Timetable ({format(currentWeekStart, 'MMMM dd')} - {format(new Date(currentWeekStart.getTime() + 6 * 86400000), 'MMMM dd, yyyy')})</h3>
                 <div className="d-flex gap-2 align-items-center">
+                    {roleLoggedIn === 'Client' && clientPets.length > 0 && (
+                        <select className="form-select form-select-sm rounded-pill border-secondary text-dark" style={{ width: '160px' }} value={petFilter} onChange={(e) => setPetFilter(e.target.value)}>
+                            <option value="all">All Pets</option>
+                            {clientPets.map(pet => (
+                                <option key={pet.petId} value={pet.petId}>{pet.name}</option>
+                            ))}
+                        </select>
+                    )}
                     <select className="form-select form-select-sm rounded-pill border-secondary text-dark" style={{ width: '160px' }} value={filter} onChange={(e) => setFilter(e.target.value)}>
                         <option value="all">All Services</option>
                         <option value="general">General</option>
@@ -138,11 +164,12 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
                         <hr />
                         {appointments.filter(appt => {
                             const apptDate = parseISO(appt.startTime);
-                            const isInCurrentWeek = isSameDay(startOfWeek(apptDate, { weekStartsOn: 1 }), currentWeekStart);
+                            const isClient = roleLoggedIn === 'Client';
+                            const showAllStatuses = roleLoggedIn === 'Client';
+                            const matchesPet = petFilter === 'all' || String(appt.petId) === petFilter;
                             return (
-                                ['Confirmed', 'Finished'].includes(appt.status) &&
-                                isSameDay(apptDate, day) &&
-                                (!isInCurrentWeek || isTodayOrAfter(apptDate)) &&
+                                (isClient || ['Confirmed', 'Finished'].includes(appt.status)) &&
+                                isSameDay(apptDate, day) && matchesPet &&
                                 (filter === 'all' || appt.serviceType?.toLowerCase() === filter)
                             );
                         }).map(appt => (
@@ -224,34 +251,65 @@ const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
                                 <p><strong>Price:</strong> ${selectedAppointment.price}</p>
                                 <p><strong>Status:</strong> {selectedAppointment.status}</p>
                             </div>
-                            <div className="modal-footer d-flex justify-content-between">
-                                {selectedAppointment.status === 'Confirmed' && (
-                                    <div className="d-flex gap-2">
-                                        <button className="btn btn-outline-danger" onClick={() => { if (window.confirm("Are you sure?")) { updateAppointmentStatus(selectedAppointment.appointmentId, 'Cancelled'); setSelectedAppointment(null); } }}>Cancel</button>
-                                        <button className="btn btn-outline-success" onClick={() => { updateAppointmentStatus(selectedAppointment.appointmentId, 'Finished'); setSelectedAppointment(null); }}>Finish</button>
-                                    </div>
-                                )}
-                                {selectedAppointment.status === 'Pending' && (
-                                    <div className="d-flex gap-2">
-                                        <button className="btn btn-outline-success" onClick={() => { updateAppointmentStatus(selectedAppointment.appointmentId, 'Confirmed'); setSelectedAppointment(null); }}>Accept</button>
-                                        <button className="btn btn-outline-dark" onClick={() => { updateAppointmentStatus(selectedAppointment.appointmentId, 'Declined'); setSelectedAppointment(null); }}>Decline</button>
-                                    </div>
-                                )}
-                                <button className="btn btn-secondary" onClick={() => setSelectedAppointment(null)}>Close</button>
-                            </div>
+                            {roleLoggedIn === 'Client' ? (
+                                <div className="modal-footer d-flex justify-content-between">
+                                    <button className="btn btn-outline-danger" onClick={() => {
+                                        if (window.confirm("Are you sure you want to cancel this appointment?")) {
+                                            updateAppointmentStatus(selectedAppointment.appointmentId, 'Cancelled');
+                                            setSelectedAppointment(null);
+                                        }
+                                    }}>Cancel</button>
+                                    <button className="btn btn-secondary" onClick={() => setSelectedAppointment(null)}>Close</button>
+                                </div>
+                            ) : (
+                                <div className="modal-footer d-flex justify-content-between">
+                                    {selectedAppointment.status === 'Confirmed' && (
+                                        <div className="d-flex gap-2">
+                                            <button className="btn btn-outline-danger" onClick={() => {
+                                                if (window.confirm("Are you sure?")) {
+                                                    updateAppointmentStatus(selectedAppointment.appointmentId, 'Cancelled');
+                                                    setSelectedAppointment(null);
+                                                }
+                                            }}>Cancel</button>
+                                            <button className="btn btn-outline-success" onClick={() => {
+                                                updateAppointmentStatus(selectedAppointment.appointmentId, 'Finished');
+                                                setSelectedAppointment(null);
+                                            }}>Finish</button>
+                                        </div>
+                                    )}
+                                    {selectedAppointment.status === 'Pending' && (
+                                        <div className="d-flex gap-2">
+                                            <button className="btn btn-outline-success" onClick={() => {
+                                                updateAppointmentStatus(selectedAppointment.appointmentId, 'Confirmed');
+                                                setSelectedAppointment(null);
+                                            }}>Accept</button>
+                                            <button className="btn btn-outline-dark" onClick={() => {
+                                                updateAppointmentStatus(selectedAppointment.appointmentId, 'Declined');
+                                                setSelectedAppointment(null);
+                                            }}>Decline</button>
+                                        </div>
+                                    )}
+                                    <button className="btn btn-secondary" onClick={() => setSelectedAppointment(null)}>Close</button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-            )}
+    )
+}
 
-            {showAddAppointmentModal && (
-                <AddAppointment 
-                toggleModal={toggleModal} 
-                roleLoggedIn={roleLoggedIn}
-                userId={userId}
-                toggleTrigger={toggleTrigger} />
-            )}
-        </div>
+
+
+{
+    showAddAppointmentModal && (
+        <AddAppointment
+            toggleModal={toggleModal}
+            roleLoggedIn={roleLoggedIn}
+            userId={userId}
+            toggleTrigger={toggleTrigger} />
+    )
+}
+        </div >
     );
 };
 

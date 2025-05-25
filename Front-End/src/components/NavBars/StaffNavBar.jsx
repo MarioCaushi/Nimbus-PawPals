@@ -50,7 +50,7 @@ function StaffNavBar({ role }) {
                 <Link className="nav-link text-dark" to="/Products">Inventory</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link text-dark" to="/Timetable-Staff">Timetable</Link>
+                <Link className="nav-link text-dark" to="/Timetable">Timetable</Link>
               </li>
 
               {/* Insights - Only for Manager */}

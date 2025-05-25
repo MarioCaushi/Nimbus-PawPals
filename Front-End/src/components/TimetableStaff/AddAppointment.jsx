@@ -1,7 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { addItemToCart } from '../../utils/cartUtils';
 
 const AddAppointment = ({ toggleModal, roleLoggedIn, userId, toggleTrigger }) => {
+  useEffect(() => {
+    if (roleLoggedIn === 'Client') {
+      (async () => {
+        try {
+          const response = await axios.get(`http://localhost:5067/api/Client/${userId}`);
+          setClientData(response.data);
+          setStep(2); // Skip client ID input step
+        } catch (error) {
+          console.error('Failed to fetch client data for logged-in client:', error);
+          setErrorMessage('Unable to load client data.');
+        }
+      })();
+    }
+  }, [roleLoggedIn, userId]);
   const [step, setStep] = useState(1);
   const [clientIdInput, setClientIdInput] = useState('');
   const [clientData, setClientData] = useState(null);
@@ -106,6 +121,16 @@ const AddAppointment = ({ toggleModal, roleLoggedIn, userId, toggleTrigger }) =>
       paymentMethod: appointmentSummary.paymentMethod,
       totalAmount: appointmentSummary.totalPrice
     };
+
+    if (roleLoggedIn === 'Client') {
+      // Leave space for future logic to store the appointment client-side
+      console.log('Client appointment prepared (not submitted):', dto);
+      addItemToCart(dto, "service"); // Store in cart for client
+      toggleModal();
+      setShowSummary(false);
+      setAppointmentSummary(null);
+      return;
+    }
 
     try {
       await axios.post('http://localhost:5067/api/Timetable/addTimetable', dto);
@@ -251,10 +276,16 @@ const AddAppointment = ({ toggleModal, roleLoggedIn, userId, toggleTrigger }) =>
 
                   <div className="mb-3">
                     <label className="form-label">Payment Method</label>
+                    {roleLoggedIn === 'Client' ? (
+                    <select className="form-select" value={paymentMethod} disabled>
+                      <option value="Card">Card</option>
+                    </select>
+                  ) : (
                     <select className="form-select" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                       <option value="Cash">Cash</option>
                       <option value="Card">Card</option>
                     </select>
+                  )}
                   </div>
 
                   <div className="modal-footer bg-light d-flex justify-content-between">

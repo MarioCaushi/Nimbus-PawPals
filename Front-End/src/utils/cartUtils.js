@@ -1,40 +1,64 @@
 const CART_KEY = 'cartItems';
 
-// Get cart items (returns array)
+// Get cart items (returns dictionary with Services and Products)
 export const getCartItems = () => {
   const cart = localStorage.getItem(CART_KEY);
-  return cart ? JSON.parse(cart) : [];
+  return cart ? JSON.parse(cart) : { Services: [], Products: [] };
 };
 
-// Add item to cart
-export const addItemToCart = (item) => {
+// Add item to cart in correct category
+export const addItemToCart = (item, type) => {
   const cart = getCartItems();
-  cart.push(item);
+  if (type === 'service') {
+    cart.Services.push(item);
+  } else if (type === 'product') {
+    cart.Products.push(item);
+  }
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
 };
 
-// Remove item by id (assuming each item has a unique id)
-export const removeItemFromCart = (itemId) => {
-  const cart = getCartItems().filter(item => item.id !== itemId);
+// Remove item by id from both categories
+export const removeItemFromCart = (itemId, type) => {
+  const cart = getCartItems();
+  if (type === 'service') {
+    cart.Services = cart.Services.filter(item => item.id !== itemId);
+  } else if (type === 'product') {
+    cart.Products = cart.Products.filter(item => item.id !== itemId);
+  }
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
 };
 
-// Update item quantity by id
+// Update item quantity by id in products only
 export const updateItemQuantity = (itemId, quantity) => {
-    const cart = getCartItems().map(item => {
-      if (item.id === itemId) {
-        if (quantity === 0) {
-          return null; 
-        }
-        return { ...item, quantity };
-      }
-      return item;
-    }).filter(item => item !== null); 
-    localStorage.setItem(CART_KEY, JSON.stringify(cart));
-  };
-  
+  const cart = getCartItems();
+  cart.Products = cart.Products.map(item => {
+    if (item.id === itemId) {
+      return quantity <= 0 ? null : { ...item, quantity };
+    }
+    return item;
+  }).filter(item => item !== null);
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+};
 
 // Clear cart
 export const clearCart = () => {
   localStorage.removeItem(CART_KEY);
+};
+
+// Format cart for summary
+export const formatCartDetails = (services = [], products = []) => {
+  return {
+    Services: services.map(s => ({
+      serviceId: s.serviceId,
+      name: s.name,
+      price: s.price,
+      duration: s.duration
+    })),
+    Products: products.map(p => ({
+      productId: p.productId,
+      name: p.name,
+      quantity: p.quantity,
+      price: p.price
+    }))
+  };
 };

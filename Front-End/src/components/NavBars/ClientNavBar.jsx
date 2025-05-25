@@ -48,7 +48,7 @@ function ClientNavBar({ role }) {
               <Link className="nav-link fw-semibold">Inventory</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link fw-semibold">Timetable</Link>
+              <Link className="nav-link fw-semibold" to="/Timetable">Timetable</Link>
             </li>
           </ul>
 
