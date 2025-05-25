@@ -2,6 +2,7 @@ import { getCartItemCount } from '../../utils/cartUtils';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
+import { clearUserInfo } from "/src/utils/authUtils.js"
 
 function ClientNavBar({ role }) {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ function ClientNavBar({ role }) {
               <Link className="nav-link fw-semibold" to="/Pets">My Pets</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link fw-semibold">Inventory</Link>
+              <Link className="nav-link fw-semibold" to="/Products">Inventory</Link>
             </li>
             <li className="nav-item">
               <Link className="nav-link fw-semibold" to="/Timetable">Timetable</Link>

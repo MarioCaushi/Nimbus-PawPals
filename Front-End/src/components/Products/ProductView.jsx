@@ -3,6 +3,7 @@ import ProductFilter from './ProductFilter';
 import axios from "axios";
 import AddProductModal from '../Modals/ProductModals/AddProductModal';
 import EditProductModal from '../Modals/ProductModals/EditProductModal';
+import { addItemToCart } from '../../utils/cartUtils';
 
 const ProductView = ({ role }) => {
 
@@ -137,6 +138,24 @@ const ProductView = ({ role }) => {
             console.error("Error with the delete API call", error);
         }
     }
+
+    const [cartQuantity, setCartQuantity] = useState(1);
+
+    const handleAddToCart = (product) => {
+        console.log("Add to cart:", product, "Quantity:", cartQuantity);
+        // Add your real logic here
+
+        const cartItem = {
+            ...product,
+            quantity: cartQuantity}
+
+        console.log("Cart Item:", cartItem);
+
+        addItemToCart(cartItem, 'product');
+        alert(`${product.name} has been added to your cart!`);
+    };
+
+
 
 
     return (
@@ -369,6 +388,35 @@ const ProductView = ({ role }) => {
 
                                     </>
                                 )}
+                                {role === "Client" && (
+                                    <div className="d-flex align-items-center gap-3 me-auto">
+                                        <div className="input-group" style={{ width: '130px' }}>
+                                            <button
+                                                className="btn btn-outline-secondary"
+                                                onClick={() => setCartQuantity(prev => Math.max(1, prev - 1))}
+                                            >−</button>
+                                            <input
+                                                type="number"
+                                                className="form-control text-center"
+                                                value={cartQuantity}
+                                                onChange={(e) => setCartQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                                            />
+                                            <button
+                                                className="btn btn-outline-secondary"
+                                                onClick={() => setCartQuantity(prev => prev + 1)}
+                                            >+</button>
+                                        </div>
+
+                                        <button
+                                            className="btn btn-outline-success fw-semibold px-4 py-2 rounded-pill shadow-sm"
+                                            onClick={() => handleAddToCart(selectedProduct)}
+                                        >
+                                            🛒 Add {cartQuantity} to Cart
+                                        </button>
+                                    </div>
+                                )}
+
+
                                 <button
                                     className="btn btn-secondary"
                                     onClick={() => setSelectedProduct(null)}
