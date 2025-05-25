@@ -1,5 +1,6 @@
 import React from 'react'
 import { useState } from 'react'
+import axios from 'axios';
 
 function AddStaffModal({ salaryList, role, handleTriggerAPI, handleAddStaffModal }) {
   const [staff, setStaff] = useState({
@@ -53,53 +54,61 @@ function AddStaffModal({ salaryList, role, handleTriggerAPI, handleAddStaffModal
     setEmailExists(false);
   };
 
-  const handleAddStaff = () => {
-    const requiredFields = ['personalId', 'firstName', 'lastName', 'birthday', 'contactNumber', 'address', 'username', 'password'];
-    if (role.toLowerCase() === 'doctor') requiredFields.push('specialty', 'qualification');
-    if (role.toLowerCase() === 'receptionist') requiredFields.push('qualification');
+const handleAddStaff = async () => {
+  const requiredFields = ['personalId', 'firstName', 'lastName', 'birthday', 'contactNumber', 'address', 'username', 'password'];
+  if (role.toLowerCase() === 'doctor') requiredFields.push('specialty', 'qualification');
+  if (role.toLowerCase() === 'receptionist') requiredFields.push('qualification');
 
-    const emptyFields = requiredFields.filter(field => !staff[field]);
-    if (emptyFields.length > 0) {
-      setMessage('Please fill in all required fields.');
-      setMessageType('error');
-      setTimeout(() => {
-        setMessage(null);
-        setMessageType('');
-      }, 3000);
-      return;
-    }
+  const emptyFields = requiredFields.filter(field => !staff[field]);
+  if (emptyFields.length > 0) return showMessage('Please fill in all required fields.', 'error');
 
-    if (staff.password.length < 8) {
-      setMessage('Password must be at least 8 characters long.');
-      setMessageType('error');
-      setTimeout(() => {
-        setMessage(null);
-        setMessageType('');
-      }, 3000);
-      return;
-    }
+  if (staff.password.length < 8) return showMessage('Password must be at least 8 characters long.', 'error');
 
-    // Find matching salary
-    const matchedSalary = salaryList.find(s => {
-      return role.toLowerCase() !== 'doctor'
-        ? s.role.toLowerCase() === role.toLowerCase()
-        : s.role.toLowerCase() === role.toLowerCase() && s.specialty === staff.specialty;
-    });
+  const matchedSalary = salaryList.find(s => {
+    return role.toLowerCase() !== 'doctor'
+      ? s.role.toLowerCase() === role.toLowerCase()
+      : s.role.toLowerCase() === role.toLowerCase() && s.specialty === staff.specialty;
+  });
 
-    if (matchedSalary) {
-      staff.salaryId = parseInt(matchedSalary.salaryId);
-    }
-
-    const finalStaff = {
-      ...staff,
-      personalId: parseInt(staff.personalId),
-    };
-
-    console.log('Staff data to be added:', finalStaff);
-
-    // API call logic will go here...
-    
+  const finalStaff = {
+    ...staff,
+    personalId: parseInt(staff.personalId),
+    salaryId: matchedSalary ? parseInt(matchedSalary.salaryId) : ''
   };
+
+  try {
+    const response = await axios.post('http://localhost:5067/api/Staff/addStaff', finalStaff);
+    if (response.status === 201) {
+      showMessage('Staff member added successfully!', 'success');
+
+    }
+  } catch (error) {
+    console.error('Error adding staff:', error);
+    if (error.response?.status === 409) {
+      setEmailExists(true);
+      return showMessage('This email is already taken. Please choose another.', 'danger');
+    }
+    return showMessage('An error occurred while adding the staff member. Please try again.', 'danger');
+  }
+
+        // Delay discard + API trigger slightly to allow user to see the message
+      setTimeout(() => {
+        handleTriggerAPI();
+        handleDiscard();
+      }, 1500);
+
+};
+
+
+const showMessage = (msg, type) => {
+  setMessage(msg);
+  setMessageType(type);
+  setTimeout(() => {
+    setMessage(null);
+    setMessageType('');
+  }, 3000);
+};
+
 
   const filteredSalaries = salaryList.filter(salary => {
     if (role.toLowerCase() !== 'doctor') return salary.role.toLowerCase() === role.toLowerCase();

@@ -8,7 +8,7 @@ namespace Back_End.Services.ServicesInterface
     {
         Task<List<object>> GetAllTimetablesAsync();
         Task<string?> UpdateAppointmentStatusAsync(UpdateTimetableStatusDto dto);
-        Task<string?> AddAppointmentAsync(AddTimetableDto dto);
+        Task<bool?> AddAppointmentAsync(AddTimetableDto dto);
 
     }
 }

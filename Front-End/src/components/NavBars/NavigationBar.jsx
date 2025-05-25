@@ -1,6 +1,7 @@
 import React from 'react';
 import HomeNavBar from '../NavBars/HomeNavBar';
 import StaffNavBar from "./StaffNavBar"
+import ClientNavBar from './ClientNavBar';
 
 
 const NavigationBar = ({ loggedIn, role }) => {
@@ -16,7 +17,7 @@ const NavigationBar = ({ loggedIn, role }) => {
         }
         else
         {
-            return ;
+            return <ClientNavBar/>;
         }
     };
 

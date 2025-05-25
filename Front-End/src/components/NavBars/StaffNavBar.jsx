@@ -31,7 +31,7 @@ function StaffNavBar({ role }) {
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav me-auto mb-2 mb-lg-0">
               <li className="nav-item">
-                <Link className="nav-link text-dark" to="/Pets-Staff">Pets</Link>
+                <Link className="nav-link text-dark" to="/Pets">Pets</Link>
               </li>
 
               {/* Clients and Staff - Manager or Receptionist */}
@@ -50,13 +50,13 @@ function StaffNavBar({ role }) {
                 <Link className="nav-link text-dark" to="/Products">Inventory</Link>
               </li>
               <li className="nav-item">
-                <Link className="nav-link text-dark" to="/Timetable-Staff">Timetable</Link>
+                <Link className="nav-link text-dark" to="/Timetable">Timetable</Link>
               </li>
 
               {/* Insights - Only for Manager */}
               {normalizedRole === 'manager' && (
                 <li className="nav-item">
-                  <Link className="nav-link text-dark">Insights</Link>
+                  <Link className="nav-link text-dark" to="/Insights-Staff">Insights</Link>
                 </li>
               )}
             </ul>

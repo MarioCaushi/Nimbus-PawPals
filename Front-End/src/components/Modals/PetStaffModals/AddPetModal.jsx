@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { set } from 'date-fns';
 
-const AddPetModal = ({ show, handleClose }) => {
+const AddPetModal = ({ show, handleClose, toggleAPIHandler }) => {
   const [formData, setFormData] = useState({
     name: '',
     birthday: '',
@@ -36,6 +38,70 @@ const AddPetModal = ({ show, handleClose }) => {
       healthStatus: '',
       clientId: ''
     });
+  };
+
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+
+  const handleAddPet = async () => {
+    // Check for empty fields
+    const requiredFields = Object.keys(formData);
+    const emptyFields = requiredFields.filter(key => formData[key] === '');
+    if (emptyFields.length > 0) {
+      setMessage('Please fill in all the fields.');
+      setMessageType('error');
+
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }
+      , 2000);
+      return;
+    }
+
+    // Validate numeric fields
+    const numericFields = ['weight', 'healthStatus', 'clientId'];
+    for (const field of numericFields) {
+      if (isNaN(formData[field])) {
+        setMessage(`"${field}" must be a valid number.`);
+        setMessageType('error');
+
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }
+        , 2000);
+        return;
+      }
+    }
+
+    // Clear previous messages
+    setMessage('');
+    setMessageType('');
+
+    try {
+      //  TODO: Add API logic here
+      console.log('All fields valid. Ready to submit:', formData);
+
+      const response = await axios.post('http://localhost:5067/api/Pet/addPet', formData);
+      if (response.status == 200) {
+
+        setMessage('Pet added successfully!');
+        setMessageType('success');
+
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 2000);
+
+        discardChanges();
+        toggleAPIHandler(); // Refresh the pet list after adding a new pet
+      }
+    } catch (error) {
+      console.error('API error:', error);
+      setMessage('An error occurred while adding the pet. Please try again.');
+      setMessageType('error');
+    }
   };
 
 
@@ -123,12 +189,19 @@ const AddPetModal = ({ show, handleClose }) => {
                 <input type="text" name="specialNeed" className="form-control" value={formData.specialNeed} onChange={handleChange} />
               </div>
             </form>
+
+            {message && (
+              <div className={`alert alert-${messageType === 'success' ? 'success' : 'danger'}`} role="alert">
+                {message}
+              </div>
+            )}
+
           </div>
 
           {/* Footer */}
           <div className="modal-footer justify-content-between px-4" style={{ backgroundColor: '#f1f8e9' }}>
             <div className="d-flex gap-2">
-              <button className="btn btn-outline-success rounded-pill px-4" >➕ Add</button>
+              <button className="btn btn-outline-success rounded-pill px-4" onClick={handleAddPet}>➕ Add</button>
               <button className="btn btn-outline-warning rounded-pill px-4 text-dark" onClick={discardChanges}>❌ Discard</button>
             </div>
             <button className="btn btn-outline-secondary rounded-pill px-4" onClick={handleClose}>🔙 Close</button>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-function EditPetDetailsModal({ show, handleClose, pet }) {
+function EditPetDetailsModal({ show, handleClose, pet, toggleAPIHandler }) {
 
   const [formData, setFormData] = useState({
     color: '',
@@ -25,8 +26,12 @@ function EditPetDetailsModal({ show, handleClose, pet }) {
         allergyInfo: pet.allergyInfo || '',
         castrated: pet.castrated !== undefined ? pet.castrated.toString() : ''
       });
+      setMessage('');
+      setMessageType('');
+      console.log('Pet data loaded:', pet);
     }
   }, [pet]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,6 +52,105 @@ function EditPetDetailsModal({ show, handleClose, pet }) {
       });
     }
   };
+
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
+
+  const handleEditPet = async () => {
+    // Check if any changes were made
+    const original = {
+      color: pet.color || '',
+      gender: pet.gender || '',
+      birthday: pet.birthday || '',
+      weight: pet.weight || '',
+      specialNeed: pet.specialNeed || '',
+      healthStatus: pet.healthStatus || '',
+      allergyInfo: pet.allergyInfo || '',
+      castrated: pet.castrated !== undefined ? pet.castrated.toString() : ''
+    };
+
+    const noChanges = Object.keys(formData).every(
+      key => formData[key] === original[key]
+    );
+
+    if (noChanges) {
+      setMessage("No changes made.");
+      setMessageType("error");
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 2000);
+      return;
+    }
+
+    // Check for empty or invalid fields
+    for (const [key, value] of Object.entries(formData)) {
+      if (value === '') {
+        setMessage("Please fill in all fields.");
+        setMessageType("error");
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 2000);
+        return;
+      }
+
+      if (['weight', 'healthStatus'].includes(key) && isNaN(value)) {
+        setMessage(`"${key}" must be a valid number.`);
+        setMessageType("error");
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 2000);
+        return;
+      }
+
+      if (key === 'healthStatus' && (value < 1 || value > 10)) {
+        setMessage("Health status must be between 1 and 10.");
+        setMessageType("error");
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 2000);
+        return;
+      }
+    }
+
+
+    setMessage('');
+    setMessageType('');
+
+    try {
+      //  TODO: Add API logic here
+      console.log("Pet data ready to be updated:", formData);
+      console.log("Pet ID:", pet.petId);
+
+      const response = await axios.put(`http://localhost:5067/api/Pet/editPet/${pet.petId}`, formData);
+      if (response.status == 200) {
+        console.log("Pet updated successfully:", response.data);
+        setMessage("Pet details updated successfully!");
+        setMessageType("success");
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 2000);
+
+        toggleAPIHandler(); 
+
+      }
+
+    } catch (error) {
+      console.error("API error while updating pet:", error);
+      setMessage("An error occurred while updating. Please try again.");
+      setMessageType("error");
+      setTimeout(() => {
+        setMessage('');
+        setMessageType('');
+      }, 2000);
+
+    }
+  };
+
 
   if (!show || !pet) return null;
 
@@ -161,14 +265,22 @@ function EditPetDetailsModal({ show, handleClose, pet }) {
                 </select>
               </div>
             </form>
+
+            {message && (
+              <div className={`mt-3 alert alert-${messageType === 'success' ? 'success' : 'danger'}`} role="alert">
+                {message}
+              </div>
+            )}
+
           </div>
 
           {/* Footer Buttons */}
           <div className="modal-footer justify-content-between px-4" style={{ backgroundColor: '#f8f9fc' }}>
             <div className="d-flex gap-2">
-              <button className="btn btn-outline-success rounded-pill px-4">
+              <button className="btn btn-outline-success rounded-pill px-4" onClick={handleEditPet}>
                 ✅ Save
               </button>
+
               <button className="btn btn-outline-warning rounded-pill px-4 text-dark" onClick={discardChanges}>
                 ❌ Discard
               </button>

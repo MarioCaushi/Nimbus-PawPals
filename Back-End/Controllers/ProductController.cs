@@ -40,7 +40,7 @@ public class ProductController : ControllerBase
         var types = await _productService.GetProductTypes();
         return Ok(types);
     }
-    [HttpPost]
+    [HttpPost("addProduct")]
     public async Task<IActionResult> AddProduct([FromBody] ProductDto productDto)
     {
         // Set the DateAdded to current UTC time
@@ -49,7 +49,7 @@ public class ProductController : ControllerBase
         var result = await _productService.AddProduct(productDto);
         return result ? Ok() : BadRequest();
     }
-    [HttpPut]
+    [HttpPut("editProduct")]
     public async Task<IActionResult> EditProduct([FromBody] ProductDto productDto)
     {
         var result = await _productService.EditProduct(productDto);

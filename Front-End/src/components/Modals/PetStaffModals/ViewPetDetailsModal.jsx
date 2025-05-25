@@ -1,9 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLoggedIn }) {
+function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLoggedIn, toggleAPIHandler, userId }) {
   const [activeTab, setActiveTab] = useState('info');
 
   if (!show || !pet) return null;
+
+  const handledDeleteClick = async () => {
+    if (window.confirm(`Are you sure you want to delete ${pet.name}? This action cannot be undone.`)) {
+      try {
+        const response = await axios.delete(`http://localhost:5067/api/Pet/${pet.petId}`);
+        if (response.status === 200) {
+          console.log("Pet deleted successfully:", response.data);
+          handleClose(); // Close the modal after deletion
+          toggleAPIHandler();
+
+        } else {
+          console.error("Error deleting pet:", response.statusText);
+        }
+      } catch (error) {
+        console.error("API error while deleting pet:", error);
+        alert("An error occurred while deleting the pet. Please try again.");
+      }
+    }
+  };
 
   const speciesEmoji = {
     Dog: '🐶',
@@ -16,92 +36,100 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
   };
 
   const [showAddMedicalModal, setShowAddMedicalModal] = useState(false);
-  const [newRecord, setNewRecord] = useState({ date: '', description: '' });
+  const [newRecord, setNewRecord] = useState({ date: '', description: '', petId: pet.petId });
+  const [recordError, setRecordError] = useState('');
+  const [recordSuccess, setRecordSuccess] = useState('');
+  const [toggleAPI, setToggleAPI] = useState(false);
 
-  const handleAddMedicalRecord = () => {
-    if (!newRecord.date || !newRecord.description) return;
-    medicalCharts.push({
-      date: newRecord.date,
-      description: newRecord.description,
-      petId: pet.petId
-    });
-    setShowAddMedicalModal(false);
-    setNewRecord({ date: '', description: '' });
+
+  const handleToggleAPI = () => {
+    setToggleAPI(!toggleAPI);
   };
+
+const handleAddMedicalRecord = async () => {
+  if (!newRecord.date || !newRecord.description) {
+    setRecordError('Please fill in both fields before adding.');
+    setRecordSuccess('');
+    setTimeout(() => setRecordError(''), 2000);
+    return;
+  }
+
+  try {
+    const response = await axios.post(`http://localhost:5067/api/Pet/medical-chart`, newRecord);
+    if (response.status === 200) {
+      console.log("Medical record added successfully:", response.data);
+      setRecordError('');
+      setRecordSuccess('Medical record added successfully!');
+      
+      setTimeout(() => {
+        setRecordSuccess('');
+        setShowAddMedicalModal(false);
+        setNewRecord({ date: '', description: '', petId: pet.petId });
+        handleToggleAPI(); // Refresh records
+      }, 2000);
+    }
+  } catch (error) {
+    console.error("API error while adding medical record:", error);
+    setRecordError("An error occurred. Please try again.");
+    setRecordSuccess('');
+    setTimeout(() => setRecordError(''), 2000);
+  }
+};
 
 
   const emoji = speciesEmoji[pet.species] || speciesEmoji.default;
 
-  // Mock data for medical charts and appointments
-  const medicalCharts = [
-    {
-      medicalChartId: 101,
-      description: 'Routine vaccination and general check-up. All vital signs normal.',
-      date: '2023-06-15',
-      petId: pet.petId
-    },
-    {
-      medicalChartId: 102,
-      description: 'Treatment for mild ear infection. Prescribed antibiotics.',
-      date: '2023-09-01',
-      petId: pet.petId
-    },
-    {
-      medicalChartId: 103,
-      description: 'Dental cleaning. Observed minor tartar buildup.',
-      date: '2024-01-10',
-      petId: pet.petId
-    },
-    {
-      medicalChartId: 104,
-      description: 'Skin allergy treatment. Applied topical medication.',
-      date: '2024-03-22',
-      petId: pet.petId
-    }
-  ];
+  const [appointmentError, setAppointmentError] = useState('');
+  const [medicalError, setMedicalError] = useState('');
 
-  const appointmentRecords = [
-    {
-      appointmentId: 201,
-      startTime: '2023-04-18T10:00:00',
-      endTime: '2023-04-18T10:30:00',
-      description: 'Annual physical exam',
-      status: 'Completed',
-      petId: pet.petId,
-      serviceType: 'Checkup',
-      serviceName: 'Full Physical Check'
-    },
-    {
-      appointmentId: 202,
-      startTime: '2023-06-22T15:00:00',
-      endTime: '2023-06-22T15:15:00',
-      description: 'Rabies vaccination',
-      status: 'Completed',
-      petId: pet.petId,
-      serviceType: 'Vaccination',
-      serviceName: 'Rabies Shot'
-    },
-    {
-      appointmentId: 203,
-      startTime: '2024-01-10T09:00:00',
-      endTime: '2024-01-10T09:45:00',
-      description: 'Dental cleaning procedure',
-      status: 'Completed',
-      petId: pet.petId,
-      serviceType: 'Dental',
-      serviceName: 'Teeth Cleaning'
-    },
-    {
-      appointmentId: 204,
-      startTime: '2024-03-14T13:30:00',
-      endTime: '2024-03-14T14:00:00',
-      description: 'Grooming session - nails and fur',
-      status: 'Scheduled',
-      petId: pet.petId,
-      serviceType: 'Grooming',
-      serviceName: 'Basic Grooming'
+
+  const [medicalCharts, setMedicalCharts] = useState([]);
+
+  const getMedicalAPI = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5067/api/Pet/${pet.petId}/medical-records`);
+      if (response.status === 200) {
+        setMedicalCharts(response.data);
+        setMedicalError('');
+      }
+    } catch (error) {
+      console.error('Error fetching medical records:', error);
+      if (error.response?.status === 404) {
+        setMedicalError('No medical records available for this pet.');
+      } else {
+        setMedicalError('An error occurred while fetching medical records. Please try again later.');
+      }
     }
-  ];
+  };
+
+
+
+  const [appointmentRecords, setAppointmentRecords] = useState([]);
+
+  const getAppointmentAPI = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5067/api/Pet/${pet.petId}/appointments`);
+      if (response.status === 200) {
+        setAppointmentRecords(response.data);
+        setAppointmentError('');
+      }
+    } catch (error) {
+      console.error('Error fetching appointment records:', error);
+      if (error.response?.status === 404) {
+        setAppointmentError('No appointment records available for this pet.');
+      } else {
+        setAppointmentError('An error occurred while fetching appointments. Please try again later.');
+      }
+    }
+  };
+
+
+
+  useEffect(() => {
+    getMedicalAPI();
+    getAppointmentAPI();
+  }, [toggleAPI]);
+
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -145,62 +173,74 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
         return (
           <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
             <div className="text-end mb-2">
-              <button
-                className="btn btn-sm btn-outline-success"
-                onClick={() => setShowAddMedicalModal(true)}
-              >
-                ➕ Add Record
-              </button>
+{roleLoggedIn?.toLowerCase() !== 'client' && (
+  <button
+    className="btn btn-sm btn-outline-success"
+    onClick={() => setShowAddMedicalModal(true)}
+  >
+    ➕ Add Record
+  </button>
+)}
             </div>
-            {medicalCharts.map((chart) => (
-              <div
-                key={chart.medicalChartId}
-                className="p-3 mb-3 rounded"
-                style={{
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  borderLeft: '5px solid #64b5f6'
-                }}
-              >
-                <div className="d-flex justify-content-between">
-                  <strong># {chart.medicalChartId}</strong>
-                  <small className="text-muted">{new Date(chart.date).toLocaleDateString()}</small>
+            {medicalError ? (
+              <div className="text-muted text-center">{medicalError}</div>
+            ) : (
+              medicalCharts.map((chart) => (
+                <div
+                  key={chart.medicalChartId}
+                  className="p-3 mb-3 rounded"
+                  style={{
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    borderLeft: '5px solid #64b5f6'
+                  }}
+                >
+                  <div className="d-flex justify-content-between">
+                    <strong># {chart.medicalChartId}</strong>
+                    <small className="text-muted">{new Date(chart.date).toLocaleDateString()}</small>
+                  </div>
+                  <div className="mt-2 text-secondary" style={{ fontSize: '0.9rem' }}>
+                    {chart.description}
+                  </div>
                 </div>
-                <div className="mt-2 text-secondary" style={{ fontSize: '0.9rem' }}>
-                  {chart.description}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         );
+
 
       case 'appointments':
         return (
           <div className="py-3 px-2" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {appointmentRecords.map((appt) => (
-              <div
-                key={appt.appointmentId}
-                className="p-3 mb-3 rounded"
-                style={{
-                  backgroundColor: '#ffffff',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
-                  borderLeft: '5px solid #9575cd'
-                }}
-              >
-                <div className="d-flex justify-content-between">
-                  <strong># {appt.appointmentId}</strong>
-                  <small className="text-muted">{new Date(appt.startTime).toLocaleDateString()}</small>
+            {appointmentError ? (
+              <div className="text-muted text-center">{appointmentError}</div>
+            ) : (
+              appointmentRecords.map((appt) => (
+                <div
+                  key={appt.appointmentId}
+                  className="p-3 mb-3 rounded"
+                  style={{
+                    backgroundColor: '#ffffff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                    borderLeft: '5px solid #9575cd'
+                  }}
+                >
+                  <div className="d-flex justify-content-between">
+                    <strong># {appt.appointmentId}</strong>
+                    <small className="text-muted">{new Date(appt.startTime).toLocaleDateString()}</small>
+                  </div>
+                  <div className="text-secondary mt-1" style={{ fontSize: '0.9rem' }}>
+                    <div><strong>Service:</strong> {appt.serviceName} ({appt.serviceType})</div>
+                    <div><strong>Time:</strong> {appt.startTime.slice(11, 16)} - {appt.endTime.slice(11, 16)}</div>
+                    <div><strong>Status:</strong> {appt.status}</div>
+                    <div><strong>Notes:</strong> {appt.description}</div>
+                  </div>
                 </div>
-                <div className="text-secondary mt-1" style={{ fontSize: '0.9rem' }}>
-                  <div><strong>Service:</strong> {appt.serviceName} ({appt.serviceType})</div>
-                  <div><strong>Time:</strong> {appt.startTime.slice(11, 16)} - {appt.endTime.slice(11, 16)}</div>
-                  <div><strong>Status:</strong> {appt.status}</div>
-                  <div><strong>Notes:</strong> {appt.description}</div>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         );
+
 
       default:
         return null;
@@ -250,13 +290,20 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
           {/* Footer Buttons */}
           <div className="modal-footer justify-content-between px-4" style={{ backgroundColor: '#f8f9fc', borderTop: 'none' }}>
             <div className="d-flex gap-2">
-
-                {['Manager', 'Receptionist'].includes(roleLoggedIn?.toLowerCase().trim().charAt(0).toUpperCase() + roleLoggedIn?.toLowerCase().trim().slice(1)) && (
-              <button className="btn btn-outline-warning rounded-pill px-4 text-dark" onClick={handleEditClick}>
-                ✏️ Edit
-              </button>
+              {['Manager', 'Receptionist'].includes(
+                roleLoggedIn?.toLowerCase().trim().charAt(0).toUpperCase() + roleLoggedIn?.toLowerCase().trim().slice(1)
+              ) && (
+                  <>
+                    <button className="btn btn-outline-warning rounded-pill px-4 text-dark" onClick={handleEditClick}>
+                      ✏️ Edit
+                    </button>
+                    <button className="btn btn-outline-danger rounded-pill px-4 text-dark" onClick={handledDeleteClick}>
+                      🗑️ Delete
+                    </button>
+                  </>
                 )}
             </div>
+
             <button className="btn btn-outline-secondary rounded-pill px-4" onClick={handleClose}>
               ❌ Close
             </button>
@@ -266,32 +313,49 @@ function ViewPetDetailsModal({ show, handleClose, pet, handleEditClick, roleLogg
       </div>
 
       {showAddMedicalModal && (
-  <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
-    <div className="modal-dialog modal-dialog-centered">
-      <div className="modal-content" style={{ borderRadius: '15px' }}>
-        <div className="modal-header bg-primary text-white">
-          <h5 className="modal-title">Add Medical Record</h5>
-          <button type="button" className="btn-close btn-close-white" onClick={() => setShowAddMedicalModal(false)}></button>
-        </div>
-        <div className="modal-body">
-          <div className="mb-3">
-            <label className="form-label">Date</label>
-            <input type="date" className="form-control" value={newRecord.date} onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })} />
+        <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}>
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content" style={{ borderRadius: '15px' }}>
+              <div className="modal-header bg-primary text-white">
+                <h5 className="modal-title">Add Medical Record</h5>
+                <button type="button" className="btn-close btn-close-white" onClick={() => setShowAddMedicalModal(false)}></button>
+              </div>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Date</label>
+                  <input type="date" className="form-control" value={newRecord.date} onChange={(e) => setNewRecord({ ...newRecord, date: e.target.value })} />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Description</label>
+                  <textarea
+                    className="form-control"
+                    rows={3}
+                    value={newRecord.description}
+                    onChange={(e) => setNewRecord({ ...newRecord, description: e.target.value })}
+                  ></textarea>
+                  {recordError && (
+                    <div className="form-text text-danger mt-2">
+                      {recordError}
+                    </div>
+                  )}
+                  {recordSuccess && (
+                    <div className="form-text text-success mt-2">
+                      {recordSuccess}
+                    </div>
+                  )}
+                </div>
+
+
+              </div>
+              <div className="modal-footer">
+                <button className="btn btn-outline-danger" onClick={() => setNewRecord({ date: '', description: '' })}>Discard</button>
+                <button className="btn btn-success" onClick={handleAddMedicalRecord}>Add</button>
+                <button className="btn btn-secondary" onClick={() => setShowAddMedicalModal(false)}>Close</button>
+              </div>
+            </div>
           </div>
-          <div className="mb-3">
-            <label className="form-label">Description</label>
-            <textarea className="form-control" rows={3} value={newRecord.description} onChange={(e) => setNewRecord({ ...newRecord, description: e.target.value })}></textarea>
-          </div>
         </div>
-        <div className="modal-footer">
-          <button className="btn btn-outline-danger" onClick={() => setNewRecord({ date: '', description: '' })}>Discard</button>
-          <button className="btn btn-success" onClick={handleAddMedicalRecord}>Add</button>
-          <button className="btn btn-secondary" onClick={() => setShowAddMedicalModal(false)}>Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
+      )}
 
     </div>
   );
