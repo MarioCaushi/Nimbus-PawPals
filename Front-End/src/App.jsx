@@ -10,6 +10,7 @@ import PetStaff from './pages/PetStaff';
 import TimetableStaff from './pages/TimetableStaff';
 import InsightsStaff from './pages/InsightsStaff';
 import Client_PersonalInfo from './pages/ClientSide-Pages/Client_PersonalInfo';
+import ShoppingCart from './pages/ClientSide-Pages/ShoppingCart';
 
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/Timetable" element={< TimetableStaff />} />
         <Route path="/Insights-Staff" element={< InsightsStaff />} />
         <Route path="/Client-Personal-Info" element={< Client_PersonalInfo />} />
+        <Route path="/Shopping-Cart" element={< ShoppingCart />} />
         <Route path="*" element={<PageError />} />
       </Routes>
     </>

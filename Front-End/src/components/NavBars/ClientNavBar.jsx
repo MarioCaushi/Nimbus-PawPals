@@ -70,7 +70,7 @@ function ClientNavBar({ role }) {
           {/* Right-side Buttons */}
           <div className="d-flex align-items-center gap-3">
             {/* Cart Icon with Badge */}
-            <Link to="" className="position-relative">
+            <Link to="/Shopping-Cart" className="position-relative">
               <FaShoppingCart size={20} className="text-dark" />
               {/* Badge placeholder - set item count here */}
 <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
