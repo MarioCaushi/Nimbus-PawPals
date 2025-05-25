@@ -9,6 +9,7 @@ import ClientsStaff from './pages/ClientsStaff';
 import PetStaff from './pages/PetStaff';
 import TimetableStaff from './pages/TimetableStaff';
 import InsightsStaff from './pages/InsightsStaff';
+import Client_PersonalInfo from './pages/ClientSide-Pages/Client_PersonalInfo';
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
         <Route path="/Pets-Staff" element={< PetStaff />} />
         <Route path="/Timetable-Staff" element={< TimetableStaff />} />
         <Route path="/Insights-Staff" element={< InsightsStaff />} />
+        <Route path="/Client-Personal-Info" element={< Client_PersonalInfo />} />
         <Route path="*" element={<PageError />} />
       </Routes>
     </>

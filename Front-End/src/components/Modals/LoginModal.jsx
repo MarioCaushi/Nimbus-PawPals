@@ -17,7 +17,7 @@ const LoginModal = ({ show, handleClose }) => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    const reset =()=> {
+    const reset = () => {
         setUsername("");
         setPassword("");
         setError(false);
@@ -25,10 +25,10 @@ const LoginModal = ({ show, handleClose }) => {
     }
 
     const handleModalClose = () => {
-        reset();       
-        handleClose();  
+        reset();
+        handleClose();
     };
-    
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (username === "" || password === "") {
@@ -45,15 +45,14 @@ const LoginModal = ({ show, handleClose }) => {
     const loginAuth = async () => {
         try {
             const response = await axios.post('http://localhost:5067/api/Auth/login', {
-               "username": username,
-               "password": password
+                "username": username,
+                "password": password
             });
-            if (response.status === 200) {
 
+            if (response.status === 200) {
                 console.log("Login successful");
                 console.log("Response data:", response.data);
 
-                console.log(response.data);
                 setUserInfo(response.data.roleId, response.data.role);
                 setError(false);
                 setMessage("Login successful");
@@ -62,10 +61,13 @@ const LoginModal = ({ show, handleClose }) => {
                     setMessage("");
                     setError(false);
                     handleModalClose();
-                    navigate('/Personal-Info');
-                }
-                , 1000);
 
+                    if (response.data.role.toLowerCase() !== "client") {
+                        navigate('/Personal-Info');
+                    } else {
+                        navigate('/Client-Personal-Info'); // <-- the client-specific path 
+                    }
+                }, 1000);
             }
         } catch (error) {
             setError(true);
@@ -73,26 +75,26 @@ const LoginModal = ({ show, handleClose }) => {
         }
     };
 
-    
+
     return (
         <div className={showHideClassName} style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             <div className="modal-dialog modal-dialog-centered">
                 <div className="modal-content shadow-lg" style={{ borderRadius: '15px' }}>
                     <div className="modal-header" style={{ borderBottom: '1px solid #dee2e6' }}>
                         <h5 className="modal-title">Login</h5>
-                        <button type="button" className="btn-close" onClick={handleModalClose}  aria-label="Close"></button>
+                        <button type="button" className="btn-close" onClick={handleModalClose} aria-label="Close"></button>
                     </div>
                     <div className="modal-body">
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
                                 <label htmlFor="email" className="form-label">Username</label>
-                                <input type="text" className="form-control" id="username" placeholder="Enter your username" style={{ borderRadius: '12px' }} 
-                                value={username} onChange={(e) => setUsername(e.target.value)}/>
+                                <input type="text" className="form-control" id="username" placeholder="Enter your username" style={{ borderRadius: '12px' }}
+                                    value={username} onChange={(e) => setUsername(e.target.value)} />
                             </div>
                             <div className="mb-4">
                                 <label htmlFor="password" className="form-label">Password</label>
-                                <input type="password" className="form-control" id="password" placeholder="Enter your password" style={{ borderRadius: '12px' }} 
-                                value={password} onChange={(e) => setPassword(e.target.value)}/>
+                                <input type="password" className="form-control" id="password" placeholder="Enter your password" style={{ borderRadius: '12px' }}
+                                    value={password} onChange={(e) => setPassword(e.target.value)} />
                             </div>
                             <div className="d-grid gap-2">
                                 <div className="col-4 mx-auto">
