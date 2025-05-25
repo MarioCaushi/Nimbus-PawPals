@@ -56,33 +56,52 @@ namespace Back_End.Services
 
             return null; // no error
         }
-        public async Task<string?> AddAppointmentAsync(AddTimetableDto dto)
+        public async Task<bool?> AddAppointmentAsync(AddTimetableDto dto)
         {
-            var petExists = await _context.Pets.AnyAsync(p => p.PetId == dto.PetId);
-            var serviceExists = await _context.Services.AnyAsync(s => s.ServiceId == dto.ServiceId);
-
-            if (!petExists)
-                return "Pet not found";
-
-            if (!serviceExists)
-                return "Service not found";
-
-            var newAppointment = new Timetable
+            // 1. Create the Bill
+            var newBill = new Bill
             {
-                StartTime = dto.StartTime,
-                EndTime = dto.EndTime,
-                Description = dto.Description,
-                Status = dto.Status,
-                PetId = dto.PetId,
-                ServiceId = dto.ServiceId
+                ClientId = dto.ClientId,
+                PaymentMethod = dto.PaymentMethod,
+                TotalAmount = dto.TotalAmount,
+                Date = DateTime.UtcNow,
+                Services = new List<Service>() // Ensure it's not null
             };
 
-            _context.Timetables.Add(newAppointment);
+            // 2. Load Services and add to the Bill
+            foreach (var serviceId in dto.ServiceId)
+            {
+                var service = await _context.Services.FindAsync(serviceId);
+                if (service != null)
+                {
+                    newBill.Services.Add(service);
+                }
+            }
+
+            // Add the Bill to the context
+            _context.Bills.Add(newBill);
+
+            // 3. Create Timetable entries for each service
+            foreach (var serviceId in dto.ServiceId)
+            {
+                var appointment = new Timetable
+                {
+                    StartTime = dto.StartTime,
+                    EndTime = dto.EndTime,
+                    Description = dto.Description,
+                    Status = dto.Status,
+                    PetId = dto.PetId,
+                    ServiceId = serviceId
+                };
+
+                _context.Timetables.Add(appointment);
+            }
+
+            // 4. Save everything at once
             await _context.SaveChangesAsync();
-
-            return null;
+            return true;
         }
-
+        
     }
     
 }

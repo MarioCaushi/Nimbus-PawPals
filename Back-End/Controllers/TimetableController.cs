@@ -29,15 +29,15 @@ public class TimetableController : ControllerBase
 
         return BadRequest(error);
     }
-    [HttpPost]
+    [HttpPost("addTimetable")]
     public async Task<IActionResult> AddAppointment([FromBody] AddTimetableDto dto)
     {
         var error = await _timetableService.AddAppointmentAsync(dto);
 
-        if (error == null)
+        if (error == true)
             return Ok();
 
-        return BadRequest(error);
+        return BadRequest();
     }
 
 }
