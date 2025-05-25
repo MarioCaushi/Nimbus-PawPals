@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import AddAppointment from './AddAppointment';
 
 import {
     format,
@@ -11,12 +12,17 @@ import {
     startOfDay,
 } from 'date-fns';
 
-const ViewTimetableStaff = ({ roleLoggedIn }) => {
+const ViewTimetableStaff = ({ roleLoggedIn, userId }) => {
     const [appointments, setAppointments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [weekOffset, setWeekOffset] = useState(0);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [filter, setFilter] = useState('all');
+
+    const [trigger, setTrigger] = useState(false);
+    const toggleTrigger = () => {
+        setTrigger(prev => !prev);
+    };
 
     useEffect(() => {
         const fetchAppointments = async () => {
@@ -30,7 +36,7 @@ const ViewTimetableStaff = ({ roleLoggedIn }) => {
             }
         };
         fetchAppointments();
-    }, []);
+    }, [trigger]);
 
     const currentWeekStart = addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), weekOffset);
     const days = Array.from({ length: 7 }, (_, i) => new Date(currentWeekStart.getTime() + i * 86400000));
@@ -73,8 +79,39 @@ const ViewTimetableStaff = ({ roleLoggedIn }) => {
         }
     };
 
+    const [showAddAppointmentModal, setShowAddAppointmentModal] = useState(false);
+
+    const toggleModal = () => {
+        setShowAddAppointmentModal(prev => !prev);
+    };
+
+
     return (
+
         <div className="container my-5">
+            {(roleLoggedIn === 'Manager' || roleLoggedIn === 'Receptionist' || roleLoggedIn === "Client") && (
+            <div className="d-flex justify-content-center mb-5">
+                <button
+                    className="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm"
+                    style={{
+                        fontSize: '1rem',
+                        letterSpacing: '0.5px',
+                        backgroundImage: 'linear-gradient(to right, #00b4db, #0083b0)',
+                        border: 'none',
+                        transition: 'all 0.3s ease-in-out'
+                    }}
+                    onClick={() => toggleModal()}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                    ➕ Add Appointment
+                </button>
+            </div>
+            )}
+
+
+
+
             {loading && <p className="text-muted">Loading appointments...</p>}
 
             <div className="d-flex justify-content-between align-items-center mb-3">
@@ -205,6 +242,14 @@ const ViewTimetableStaff = ({ roleLoggedIn }) => {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {showAddAppointmentModal && (
+                <AddAppointment 
+                toggleModal={toggleModal} 
+                roleLoggedIn={roleLoggedIn}
+                userId={userId}
+                toggleTrigger={toggleTrigger} />
             )}
         </div>
     );
