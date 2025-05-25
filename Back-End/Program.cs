@@ -37,6 +37,7 @@ builder.Services.AddScoped<IStaffService, StaffService>();
 builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IPetService, PetService>();
 builder.Services.AddScoped<ITimetableService, TimetableService>();
+builder.Services.AddScoped<ICart, CartService>();
 
 
 // Swagger Configuration - Simplified without security

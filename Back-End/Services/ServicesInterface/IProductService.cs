@@ -10,6 +10,7 @@ public interface IProductService
     Task<ProductTypesDto> GetProductTypes();
     Task<bool> AddProduct(ProductDto productDto); 
     Task<bool> EditProduct(ProductDto productDto); 
+    
 
 
 }
