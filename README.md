@@ -1,3 +1,13 @@
+![React](https://img.shields.io/badge/React.js-2023-blue?logo=react&logoColor=white)
+![.NET](https://img.shields.io/badge/.NET-6-purple?logo=dotnet&logoColor=white)
+![CSharp](https://img.shields.io/badge/C%23-10-green?logo=csharp&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-Database-orange?logo=postgresql&logoColor=white)
+![Project](https://img.shields.io/badge/Project-Capstone-blueviolet)
+![Domain](https://img.shields.io/badge/Domain-Pet%20Care-lightblue)
+![Status](https://img.shields.io/badge/Status-Completed-success)
+![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)
+
+
 # 🐾 Nimbus' PawPals – Pet Store & Clinic Management System
 
 **Nimbus’ PawPals** is a full-stack, role-based web platform designed to manage the operational needs of a pet store and veterinary clinic. It supports tailored interfaces for Managers, Receptionists, Doctors, Groomers, and Clients—combining product sales, medical records, grooming services, hotel bookings, feedback handling, and analytics in one unified solution.
